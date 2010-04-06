@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Xml;
 using System.Xml.Linq;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace MegaMan
 {
@@ -16,6 +17,9 @@ namespace MegaMan
         private List<SpriteFrame> frames;
         private int currentFrame;
         private int lastFrameTime;
+
+        // XNA stuff
+        private Texture2D texture;
 
         /// <summary>
         /// Gets or sets the direction in which to play the sprite animation.
@@ -107,6 +111,20 @@ namespace MegaMan
             this.AnimDirection = copy.AnimDirection;
             this.AnimStyle = copy.AnimStyle;
             this.Layer = copy.Layer;
+            this.texture = copy.texture;
+            if (this.texture != null)
+            {
+            }
+        }
+
+        public void SetTexture(GraphicsDevice device, string sheet)
+        {
+            texture = Texture2D.FromFile(device, sheet);
+        }
+
+        public void SetTexture(Texture2D texture)
+        {
+            this.texture = texture;
         }
 
         public SpriteFrame this[int index]
@@ -119,7 +137,7 @@ namespace MegaMan
         /// </summary>
         public void AddFrame()
         {
-            frames.Add(new SpriteFrame(null, 0, new Point(0, 0)));
+            frames.Add(new SpriteFrame(null, 0, new Point(0, 0), new Rectangle(0, 0, 1, 1)));
             CheckTickable();
         }
 
@@ -132,14 +150,7 @@ namespace MegaMan
         /// <param name="duration">The duration of the frame, in game ticks.</param>
         public void AddFrame(Image tilesheet, int x, int y, int duration)
         {
-            Bitmap frame = new Bitmap(this.Width, this.Height);
-            frame.SetResolution(tilesheet.HorizontalResolution, tilesheet.VerticalResolution);
-            using (Graphics g = Graphics.FromImage(frame))
-            {
-                g.DrawImage(tilesheet, 0, 0, new Rectangle(x, y, this.Width, this.Height), GraphicsUnit.Pixel);
-            }
-            frame.SetResolution(tilesheet.HorizontalResolution, tilesheet.VerticalResolution);
-            this.frames.Add(new SpriteFrame(frame, duration, new Point(x, y)));
+            this.frames.Add(new SpriteFrame(tilesheet, duration, new Point(x, y), new Rectangle(x, y, this.Width, this.Height)));
             CheckTickable();
         }
 
@@ -182,30 +193,23 @@ namespace MegaMan
                 return;
             }
 
-            int trueX, trueY;
-            if (HorizontalFlip)
-            {
-                this.frames[currentFrame].Image.RotateFlip(RotateFlipType.RotateNoneFlipX);
-                trueX = (int)(positionX - this.Width + HotSpot.X);
-            }
-            else trueX = (int)(positionX - HotSpot.X);
+            this.frames[currentFrame].Draw(graphics, positionX - this.HotSpot.X, positionY - this.HotSpot.Y, this.HorizontalFlip, this.VerticalFlip);
+        }
 
-            if (VerticalFlip)
-            {
-                this.frames[currentFrame].Image.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                trueY = (int)(positionY - this.Height + HotSpot.Y);
-            }
-            else trueY = (int)(positionY - HotSpot.Y);
+        public void DrawXna(SpriteBatch batch, Microsoft.Xna.Framework.Graphics.Color color, float positionX, float positionY)
+        {
+            if (!Visible || frames.Count == 0 || batch == null || this.texture == null) return;
 
-            graphics.DrawImage(this.frames[currentFrame].Image, trueX, trueY, Width, Height);
-            if (HorizontalFlip)
-            {
-                this.frames[currentFrame].Image.RotateFlip(RotateFlipType.RotateNoneFlipX);
-            }
-            if (VerticalFlip)
-            {
-                this.frames[currentFrame].Image.RotateFlip(RotateFlipType.RotateNoneFlipY);
-            }
+            SpriteEffects effect = SpriteEffects.None;
+            if (HorizontalFlip) effect = SpriteEffects.FlipHorizontally;
+            if (VerticalFlip) effect |= SpriteEffects.FlipVertically;
+
+            batch.Draw(this.texture,
+                new Microsoft.Xna.Framework.Rectangle((int)(positionX),
+                    (int)(positionY), this.Width, this.Height),
+                new Microsoft.Xna.Framework.Rectangle(this[currentFrame].SheetLocation.X, this[currentFrame].SheetLocation.Y, this[currentFrame].SheetLocation.Width, this[currentFrame].SheetLocation.Height),
+                color, 0,
+                new Microsoft.Xna.Framework.Vector2(this.HotSpot.X, this.HotSpot.Y), effect, 0);
         }
 
         private bool tickable;
@@ -318,8 +322,7 @@ namespace MegaMan
             if (!reader.ReadToFollowing("Sprite")) return Sprite.Empty; // should alert the user
 
             string dir = System.IO.Path.GetDirectoryName(path);
-            Image tilesheet = Image.FromFile(System.IO.Path.Combine(dir, reader.GetAttribute("tilesheet")));
-            return FromXml(ref reader, tilesheet);
+            return FromXml(ref reader, Image.FromFile(System.IO.Path.Combine(dir, reader.GetAttribute("tilesheet"))));
         }
 
         public static Sprite FromXml(ref XmlTextReader reader, Image tilesheet)
@@ -366,10 +369,8 @@ namespace MegaMan
             if (tileattr == null) throw new ArgumentException("Sprite element does not specify a tilesheet!");
             Sprite sprite = null;
 
-            using (Image tilesheet = Image.FromFile(System.IO.Path.Combine(basePath, tileattr.Value)))
-            {
-                sprite = FromXml(element, tilesheet);
-            }
+            Image tilesheet = Image.FromFile(System.IO.Path.Combine(basePath, tileattr.Value));
+            sprite = FromXml(element, tilesheet);
             return sprite; 
         }
 
@@ -481,6 +482,7 @@ namespace MegaMan
         /// Gets or sets the image for this frame.
         /// </summary>
         public Image Image { get; set; }
+        public Rectangle SheetLocation { get; set; }
 
         /// <summary>
         /// Gets or sets the number of ticks that this image should be displayed.
@@ -489,11 +491,41 @@ namespace MegaMan
 
         public Point Location { get; set; }
 
-        public SpriteFrame(Bitmap img, int duration, Point location)
+        public SpriteFrame(Image img, int duration, Point location, Rectangle sheetRect)
         {
             this.Image = img;
             this.Duration = duration;
             this.Location = location;
+            this.SheetLocation = sheetRect;
+        }
+
+        public void Draw(Graphics g, float positionX, float positionY, bool hflip, bool vflip)
+        {
+            int trueX, trueY;
+            if (hflip)
+            {
+                this.Image.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                trueX = (int)(Image.Width - SheetLocation.Right);
+            }
+            else trueX = SheetLocation.Left;
+
+            if (vflip)
+            {
+                this.Image.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                trueY = (int)(Image.Height - SheetLocation.Bottom);
+            }
+            else trueY = SheetLocation.Top;
+
+            g.DrawImage(this.Image, (int)positionX, (int)positionY, new Rectangle(trueX, trueY, SheetLocation.Width, SheetLocation.Height), GraphicsUnit.Pixel);
+
+            if (hflip)
+            {
+                this.Image.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            }
+            if (vflip)
+            {
+                this.Image.RotateFlip(RotateFlipType.RotateNoneFlipY);
+            }
         }
     }
 

@@ -150,6 +150,23 @@ namespace MegaMan
             }
         }
 
+        public void DrawXna(Microsoft.Xna.Framework.Graphics.SpriteBatch batch, Microsoft.Xna.Framework.Graphics.Color color, float off_x, float off_y, int width, int height)
+        {
+            if (Tileset == null) throw new InvalidOperationException("Screen has no tileset to draw with.");
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    float xpos = x * Tileset.TileSize + off_x;
+                    float ypos = y * Tileset.TileSize + off_y;
+
+                    if (xpos + Tileset.TileSize < 0 || ypos + Tileset.TileSize < 0) continue;
+                    if (xpos > width || ypos > height) continue;
+                    Tileset[tiles[y][x]].Draw(batch, color, xpos, ypos);
+                }
+            }
+        }
+
         public void Save(string filepath)
         {
             using (FileStream f = File.Open(filepath, FileMode.Create))

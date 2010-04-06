@@ -96,6 +96,15 @@ namespace MegaMan
             }
         }
 
+        public void SetTextures(Microsoft.Xna.Framework.Graphics.GraphicsDevice device)
+        {
+            Microsoft.Xna.Framework.Graphics.Texture2D tex = Microsoft.Xna.Framework.Graphics.Texture2D.FromFile(device, this.SheetPath);
+            foreach (Tile tile in this)
+            {
+                tile.Sprite.SetTexture(tex);
+            }
+        }
+
         public new void Add(Tile tile)
         {
             base.Add(tile);

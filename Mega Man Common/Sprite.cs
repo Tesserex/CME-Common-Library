@@ -204,12 +204,15 @@ namespace MegaMan
             if (HorizontalFlip) effect = SpriteEffects.FlipHorizontally;
             if (VerticalFlip) effect |= SpriteEffects.FlipVertically;
 
+            int hx = HorizontalFlip ? this.Width - this.HotSpot.X : this.HotSpot.X;
+            int hy = VerticalFlip ? this.Height - this.HotSpot.Y : this.HotSpot.Y;
+
             batch.Draw(this.texture,
                 new Microsoft.Xna.Framework.Rectangle((int)(positionX),
                     (int)(positionY), this.Width, this.Height),
                 new Microsoft.Xna.Framework.Rectangle(this[currentFrame].SheetLocation.X, this[currentFrame].SheetLocation.Y, this[currentFrame].SheetLocation.Width, this[currentFrame].SheetLocation.Height),
                 color, 0,
-                new Microsoft.Xna.Framework.Vector2(this.HotSpot.X, this.HotSpot.Y), effect, 0);
+                new Microsoft.Xna.Framework.Vector2(hx, hy), effect, 0);
         }
 
         private bool tickable;

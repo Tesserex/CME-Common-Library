@@ -487,6 +487,7 @@ namespace MegaMan
         /// Gets or sets the image for this frame.
         /// </summary>
         public Image Image { get; private set; }
+        public Image CutTile { get { return cutTile; } }
         public Rectangle SheetLocation { get; private set; }
 
         /// <summary>

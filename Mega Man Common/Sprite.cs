@@ -137,7 +137,7 @@ namespace MegaMan
         /// </summary>
         public void AddFrame()
         {
-            frames.Add(new SpriteFrame(null, 0, new Point(0, 0), new Rectangle(0, 0, 1, 1)));
+            frames.Add(new SpriteFrame(null, 0, new Rectangle(0, 0, 1, 1)));
             CheckTickable();
         }
 
@@ -150,7 +150,7 @@ namespace MegaMan
         /// <param name="duration">The duration of the frame, in game ticks.</param>
         public void AddFrame(Image tilesheet, int x, int y, int duration)
         {
-            this.frames.Add(new SpriteFrame(tilesheet, duration, new Point(x, y), new Rectangle(x, y, this.Width, this.Height)));
+            this.frames.Add(new SpriteFrame(tilesheet, duration, new Rectangle(x, y, this.Width, this.Height)));
             CheckTickable();
         }
 
@@ -481,25 +481,30 @@ namespace MegaMan
 
     public class SpriteFrame
     {
+        private Image cutTile;
+
         /// <summary>
         /// Gets or sets the image for this frame.
         /// </summary>
-        public Image Image { get; set; }
-        public Rectangle SheetLocation { get; set; }
+        public Image Image { get; private set; }
+        public Rectangle SheetLocation { get; private set; }
 
         /// <summary>
         /// Gets or sets the number of ticks that this image should be displayed.
         /// </summary>
         public int Duration { get; set; }
 
-        public Point Location { get; set; }
-
-        public SpriteFrame(Image img, int duration, Point location, Rectangle sheetRect)
+        public SpriteFrame(Image img, int duration, Rectangle sheetRect)
         {
             this.Image = img;
             this.Duration = duration;
-            this.Location = location;
             this.SheetLocation = sheetRect;
+
+            this.cutTile = new Bitmap(sheetRect.Width, sheetRect.Height);
+            using (Graphics g = Graphics.FromImage(cutTile))
+            {
+                g.DrawImage(img, new Rectangle(0, 0, sheetRect.Width, sheetRect.Height), sheetRect.X, sheetRect.Y, sheetRect.Width, sheetRect.Height, GraphicsUnit.Pixel);
+            }
         }
 
         public void Draw(Graphics g, float positionX, float positionY, bool hflip, bool vflip)
@@ -519,9 +524,7 @@ namespace MegaMan
             }
             else trueY = SheetLocation.Top;
 
-            g.DrawImage(this.Image,
-                new Rectangle((int)positionX, (int)positionY, SheetLocation.Width, SheetLocation.Height),
-                trueX, trueY, SheetLocation.Width, SheetLocation.Height, GraphicsUnit.Pixel);
+            g.DrawImage(this.cutTile, positionX, positionY, cutTile.Width, cutTile.Height);
 
             if (hflip)
             {

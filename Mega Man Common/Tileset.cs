@@ -156,8 +156,8 @@ namespace MegaMan
                 foreach (SpriteFrame frame in tile.Sprite)
                 {
                     writer.WriteStartElement("Frame");
-                    writer.WriteAttributeString("x", frame.Location.X.ToString());
-                    writer.WriteAttributeString("y", frame.Location.Y.ToString());
+                    writer.WriteAttributeString("x", frame.SheetLocation.X.ToString());
+                    writer.WriteAttributeString("y", frame.SheetLocation.Y.ToString());
                     writer.WriteAttributeString("duration", frame.Duration.ToString());
                     writer.WriteEndElement();
                 }

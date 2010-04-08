@@ -500,10 +500,22 @@ namespace MegaMan
             this.Duration = duration;
             this.SheetLocation = sheetRect;
 
-            this.cutTile = new Bitmap(sheetRect.Width, sheetRect.Height);
+            CutoutTile();
+        }
+
+        public void SetSheetPosition(Point position)
+        {
+            SheetLocation = new Rectangle(position, SheetLocation.Size);
+            CutoutTile();
+        }
+
+        private void CutoutTile()
+        {
+            if (this.cutTile != null) this.cutTile.Dispose();
+            this.cutTile = new Bitmap(SheetLocation.Width, SheetLocation.Height);
             using (Graphics g = Graphics.FromImage(cutTile))
             {
-                g.DrawImage(img, new Rectangle(0, 0, sheetRect.Width, sheetRect.Height), sheetRect.X, sheetRect.Y, sheetRect.Width, sheetRect.Height, GraphicsUnit.Pixel);
+                g.DrawImage(Image, new Rectangle(0, 0, SheetLocation.Width, SheetLocation.Height), SheetLocation.X, SheetLocation.Y, SheetLocation.Width, SheetLocation.Height, GraphicsUnit.Pixel);
             }
         }
 

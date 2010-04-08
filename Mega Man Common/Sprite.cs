@@ -519,7 +519,9 @@ namespace MegaMan
             }
             else trueY = SheetLocation.Top;
 
-            g.DrawImage(this.Image, (int)positionX, (int)positionY, new Rectangle(trueX, trueY, SheetLocation.Width, SheetLocation.Height), GraphicsUnit.Pixel);
+            g.DrawImage(this.Image,
+                new Rectangle((int)positionX, (int)positionY, SheetLocation.Width, SheetLocation.Height),
+                trueX, trueY, SheetLocation.Width, SheetLocation.Height, GraphicsUnit.Pixel);
 
             if (hflip)
             {

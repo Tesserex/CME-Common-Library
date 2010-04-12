@@ -59,6 +59,8 @@ namespace MegaMan
         private Dictionary<string, Point> continuePoints;
         public IDictionary<string, Point> ContinuePoints { get { return continuePoints; } }
 
+        private string name, fileDir, musicIntroPath, musicLoopPath, tilePath;
+
         #region Properties
         public bool Loaded { get; private set; }
         public Dictionary<string, Screen> Screens { get; private set; }
@@ -69,11 +71,11 @@ namespace MegaMan
 
         public Tileset Tileset { get; private set; }
 
-        public string Name { get; set; }
-        public string FileDir { get; private set; }
-        public string MusicIntroPath { get; set; }
-        public string MusicLoopPath { get; set; }
-        public string TilePath { get; set; }
+        public string Name { get { return name; } set { name = value; Dirty = true; } }
+        public string FileDir { get { return fileDir; } private set { fileDir = value; Dirty = true; } }
+        public string MusicIntroPath { get { return musicIntroPath; } set { musicIntroPath = value; Dirty = true; } }
+        public string MusicLoopPath { get { return musicLoopPath; } set { musicLoopPath = value; Dirty = true; } }
+        public string TilePath { get { return tilePath; } set { tilePath = value; Dirty = true; } }
 
         private bool dirty;
         public bool Dirty

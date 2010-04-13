@@ -144,6 +144,7 @@ namespace MegaMan
         {
             Sprite = sprite;
             if (Sprite.Count == 0) Sprite.AddFrame();
+            Properties = TileProperties.Default;
         }
 
         public void Draw(Graphics g, float posX, float posY)

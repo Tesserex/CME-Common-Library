@@ -21,6 +21,8 @@ namespace MegaMan
         // XNA stuff
         private Texture2D texture;
 
+        internal Image sheet;
+
         /// <summary>
         /// Gets or sets the direction in which to play the sprite animation.
         /// </summary>
@@ -94,6 +96,7 @@ namespace MegaMan
             this.Visible = true;
             this.AnimDirection = AnimationDirection.Forward;
             this.AnimStyle = AnimationStyle.Repeat;
+            this.sheet = null;
         }
 
         public Sprite(Sprite copy)
@@ -112,9 +115,6 @@ namespace MegaMan
             this.AnimStyle = copy.AnimStyle;
             this.Layer = copy.Layer;
             this.texture = copy.texture;
-            if (this.texture != null)
-            {
-            }
         }
 
         public void SetTexture(GraphicsDevice device, string sheet)
@@ -137,7 +137,7 @@ namespace MegaMan
         /// </summary>
         public void AddFrame()
         {
-            frames.Add(new SpriteFrame(null, 0, new Rectangle(0, 0, 1, 1)));
+            frames.Add(new SpriteFrame(this.sheet, 0, Rectangle.Empty));
             CheckTickable();
         }
 
@@ -334,6 +334,7 @@ namespace MegaMan
             int height = Int32.Parse(reader.GetAttribute("height"));
 
             Sprite sprite = new Sprite(width, height);
+            sprite.sheet = tilesheet;
 
             while (reader.Read() && !(reader.NodeType == XmlNodeType.EndElement && (reader.Name == "Sprite" || reader.Name == "State") ))
             {
@@ -383,6 +384,7 @@ namespace MegaMan
             int height = Int32.Parse(element.Attribute("height").Value);
 
             Sprite sprite = new Sprite(width, height);
+            sprite.sheet = tilesheet;
 
             XAttribute nameAttr = element.Attribute("name");
             if (nameAttr != null) sprite.Name = nameAttr.Value;
@@ -504,14 +506,15 @@ namespace MegaMan
             CutoutTile();
         }
 
-        public void SetSheetPosition(Point position)
+        public void SetSheetPosition(Rectangle rect)
         {
-            SheetLocation = new Rectangle(position, SheetLocation.Size);
+            SheetLocation = rect;
             CutoutTile();
         }
 
         private void CutoutTile()
         {
+            if (this.Image == null || this.SheetLocation == Rectangle.Empty) return;
             if (this.cutTile != null) this.cutTile.Dispose();
             this.cutTile = new Bitmap(SheetLocation.Width, SheetLocation.Height);
             using (Graphics g = Graphics.FromImage(cutTile))
@@ -537,7 +540,8 @@ namespace MegaMan
             }
             else trueY = SheetLocation.Top;
 
-            g.DrawImage(this.cutTile, positionX, positionY, cutTile.Width, cutTile.Height);
+            if (this.cutTile == null) g.FillRectangle(Brushes.Black, positionX, positionY, this.SheetLocation.Width, this.SheetLocation.Height);
+            else g.DrawImage(this.cutTile, positionX, positionY, cutTile.Width, cutTile.Height);
 
             if (hflip)
             {

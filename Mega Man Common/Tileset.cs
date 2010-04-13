@@ -91,8 +91,7 @@ namespace MegaMan
                 tile.Properties = this.properties[propName];
 
                 tile.Sprite.Play();
-                this.Add(tile);
-
+                base.Add(tile);
             }
         }
 
@@ -105,9 +104,17 @@ namespace MegaMan
             }
         }
 
-        public new void Add(Tile tile)
+        /// <summary>
+        /// Do not use! Use AddTile instead!
+        /// </summary>
+        /// <param name="tile"></param>
+        public new void Add(Tile tile) { throw new NotSupportedException("Don't use this function!"); }
+
+        public void AddTile()
         {
-            base.Add(tile);
+            Sprite sprite = new Sprite(this.TileSize, this.TileSize);
+            sprite.sheet = this.Sheet;
+            base.Add(new Tile(sprite));
             if (TileAdded != null) TileAdded();
         }
 

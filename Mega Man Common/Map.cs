@@ -134,7 +134,7 @@ namespace MegaMan
             foreach (XElement screen in mapXml.Elements("Screen"))
             {
                 string id = screen.Attribute("id").Value;
-                Screen s = new Screen(directory + "\\" + id + ".scn", Tileset, this);
+                Screen s = new Screen(directory + "\\" + id + ".scn", this);
                 Screens.Add(id, s);
                 if (Screens.Count == 1)
                 {

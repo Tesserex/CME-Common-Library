@@ -43,20 +43,22 @@ namespace MegaMan
         public bool Dirty { get { return dirty; } private set { dirty = value; Map.Dirty = value; } }
         #endregion Properties
 
-        public Screen(int width, int height, Tileset tileset)
+        public Screen(int width, int height, Map parent)
         {
+            this.Map = parent;
+
             EnemyInfo = new List<EnemyCopyInfo>();
             BlockPatternInfo = new List<BlockPatternInfo>();
             Teleports = new List<TeleportInfo>();
-            Tileset = tileset;
+            Tileset = parent.Tileset;
 
             Resize(width, height);
         }
 
-        public Screen(string filepath, Tileset tileset, Map parent)
+        public Screen(string filepath, Map parent)
         {
             this.Map = parent;
-            Tileset = tileset;
+            Tileset = parent.Tileset;
 
             Name = System.IO.Path.GetFileNameWithoutExtension(filepath);
 

@@ -142,12 +142,10 @@ namespace MegaMan
             }
             writer.WriteEndElement();
 
-            int id = 0;
             foreach (Tile tile in this)
             {
                 writer.WriteStartElement("Tile");
-                writer.WriteAttributeString("id", id.ToString());
-                id++;
+                writer.WriteAttributeString("id", tile.Id);
                 writer.WriteAttributeString("name", tile.Name);
                 writer.WriteAttributeString("properties", tile.Properties.Name);
 

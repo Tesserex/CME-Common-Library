@@ -134,14 +134,16 @@ namespace MegaMan
 
     public class Tile
     {
+        public int Id { get; private set; }
         public string Name { get; set; }
         public Sprite Sprite { get; protected set; }
         public float Width { get { return Sprite.Width; } }
         public float Height { get { return Sprite.Height; } }
         public TileProperties Properties { get; set; }
 
-        public Tile(Sprite sprite)
+        public Tile(int id, Sprite sprite)
         {
+            Id = id;
             Sprite = sprite;
             if (Sprite.Count == 0) Sprite.AddFrame();
             Properties = TileProperties.Default;

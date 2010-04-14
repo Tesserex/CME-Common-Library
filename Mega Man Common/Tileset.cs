@@ -80,7 +80,7 @@ namespace MegaMan
                     sprite = Sprite.FromXml(spriteNode, Sheet);
                 }
 
-                Tile tile = new Tile(sprite);
+                Tile tile = new Tile(id, sprite);
 
                 string propName = "Default";
                 XAttribute propAttr = tileNode.Attribute("properties");
@@ -114,7 +114,7 @@ namespace MegaMan
         {
             Sprite sprite = new Sprite(this.TileSize, this.TileSize);
             sprite.sheet = this.Sheet;
-            base.Add(new Tile(sprite));
+            base.Add(new Tile(this.Count, sprite));
             if (TileAdded != null) TileAdded();
         }
 

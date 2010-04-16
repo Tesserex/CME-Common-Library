@@ -145,7 +145,7 @@ namespace MegaMan
             foreach (Tile tile in this)
             {
                 writer.WriteStartElement("Tile");
-                writer.WriteAttributeString("id", tile.Id);
+                writer.WriteAttributeString("id", tile.Id.ToString());
                 writer.WriteAttributeString("name", tile.Name);
                 writer.WriteAttributeString("properties", tile.Properties.Name);
 

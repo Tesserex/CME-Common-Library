@@ -77,6 +77,12 @@ namespace MegaMan
 
         public int Layer { get; private set; }
 
+        /// <summary>
+        /// If this is true, it means the sprite sheet is backwards - it's facing left instead of right,
+        /// so we have to flip all drawing of this sprite to match proper orientation rules.
+        /// </summary>
+        public bool Reversed { get; set; }
+
         public event Action Stopped;
 
         /// <summary>
@@ -115,6 +121,7 @@ namespace MegaMan
             this.AnimStyle = copy.AnimStyle;
             this.Layer = copy.Layer;
             this.texture = copy.texture;
+            this.Reversed = copy.Reversed;
         }
 
         public void SetTexture(GraphicsDevice device, string sheet)
@@ -193,7 +200,9 @@ namespace MegaMan
                 return;
             }
 
-            this.frames[currentFrame].Draw(graphics, positionX - this.HotSpot.X, positionY - this.HotSpot.Y, this.HorizontalFlip, this.VerticalFlip);
+            bool horiz = this.HorizontalFlip;
+            if (this.Reversed) horiz = !horiz;
+            this.frames[currentFrame].Draw(graphics, positionX - this.HotSpot.X, positionY - this.HotSpot.Y, horiz, this.VerticalFlip);
         }
 
         public void DrawXna(SpriteBatch batch, Microsoft.Xna.Framework.Graphics.Color color, float positionX, float positionY)
@@ -201,10 +210,10 @@ namespace MegaMan
             if (!Visible || frames.Count == 0 || batch == null || this.texture == null) return;
 
             SpriteEffects effect = SpriteEffects.None;
-            if (HorizontalFlip) effect = SpriteEffects.FlipHorizontally;
+            if (HorizontalFlip ^ this.Reversed) effect = SpriteEffects.FlipHorizontally;
             if (VerticalFlip) effect |= SpriteEffects.FlipVertically;
 
-            int hx = HorizontalFlip ? this.Width - this.HotSpot.X : this.HotSpot.X;
+            int hx = (HorizontalFlip ^ this.Reversed) ? this.Width - this.HotSpot.X : this.HotSpot.X;
             int hy = VerticalFlip ? this.Height - this.HotSpot.Y : this.HotSpot.Y;
 
             batch.Draw(this.texture,
@@ -388,6 +397,13 @@ namespace MegaMan
 
             XAttribute nameAttr = element.Attribute("name");
             if (nameAttr != null) sprite.Name = nameAttr.Value;
+
+            XAttribute revAttr = element.Attribute("reversed");
+            if (revAttr != null)
+            {
+                bool r = false;
+                if (bool.TryParse(revAttr.Value, out r)) sprite.Reversed = r;
+            }
 
             XElement hotspot = element.Element("Hotspot");
             if (hotspot != null)

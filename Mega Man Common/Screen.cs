@@ -13,6 +13,8 @@ namespace MegaMan
         public string state;
         public float screenX;
         public float screenY;
+        public string pallete;
+        public bool boss;
     }
 
     public struct TeleportInfo
@@ -26,6 +28,11 @@ namespace MegaMan
     {
         private int[][] tiles;
         private bool dirty;
+
+        private string musicIntroPath, musicLoopPath;
+
+        public string MusicIntroPath { get { return musicIntroPath; } set { musicIntroPath = value; Dirty = true; } }
+        public string MusicLoopPath { get { return musicLoopPath; } set { musicLoopPath = value; Dirty = true; } }
 
         public Map Map { get; private set; }
 
@@ -41,6 +48,7 @@ namespace MegaMan
         public int PixelHeight { get { return tiles.GetLength(0) * Tileset.TileSize; } }
         public Tileset Tileset { get; set; }
         public bool Dirty { get { return dirty; } private set { dirty = value; Map.Dirty = value; } }
+        public bool IsBossRoom { get; private set; }
         #endregion Properties
 
         public Screen(int width, int height, Map parent)

@@ -148,11 +148,15 @@ namespace MegaMan
                     if (stateAttr != null) state = stateAttr.Value;
                     int enemyX = Int32.Parse(entity.Attribute("x").Value);
                     int enemyY = Int32.Parse(entity.Attribute("y").Value);
-                    EnemyCopyInfo info;
+                    EnemyCopyInfo info = new EnemyCopyInfo();
                     info.enemy = enemyname;
                     info.state = state;
                     info.screenX = enemyX;
                     info.screenY = enemyY;
+                    info.boss = false;
+                    XAttribute palAttr = entity.Attribute("pallete");
+                    if (palAttr != null) info.pallete = palAttr.Value;
+                    else info.pallete = "Default";
                     s.AddEnemy(info);
                 }
                 foreach (XElement teleport in screen.Elements("Teleport"))
@@ -167,6 +171,32 @@ namespace MegaMan
                 {
                     BlockPatternInfo pattern = new BlockPatternInfo(blocks);
                     s.AddBlockPattern(pattern);
+                }
+
+                XElement screenmusic = screen.Element("Music");
+                if (screenmusic != null)
+                {
+                    XElement intro = screenmusic.Element("Intro");
+                    XElement loop = screenmusic.Element("Loop");
+                    s.MusicIntroPath = (intro != null) ? intro.Value : null;
+                    s.MusicLoopPath = (loop != null) ? loop.Value : null;
+                }
+
+                foreach (XElement entity in screen.Elements("Boss"))
+                {
+                    string enemyname = entity.Attribute("name").Value;
+                    string state = "Start";
+                    XAttribute stateAttr = entity.Attribute("state");
+                    if (stateAttr != null) state = stateAttr.Value;
+                    int enemyX = Int32.Parse(entity.Attribute("x").Value);
+                    int enemyY = Int32.Parse(entity.Attribute("y").Value);
+                    EnemyCopyInfo info = new EnemyCopyInfo();
+                    info.enemy = enemyname;
+                    info.state = state;
+                    info.screenX = enemyX;
+                    info.screenY = enemyY;
+                    info.boss = true;
+                    s.AddEnemy(info);
                 }
             }
 

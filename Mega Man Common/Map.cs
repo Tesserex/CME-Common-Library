@@ -198,6 +198,8 @@ namespace MegaMan
                     info.boss = true;
                     s.AddEnemy(info);
                 }
+
+                s.Dirty = false;
             }
 
             XElement start = mapXml.Element("Start");
@@ -257,6 +259,7 @@ namespace MegaMan
             }
 
             Loaded = true;
+            Dirty = false;
         }
 
         public void ChangeTileset(string path)

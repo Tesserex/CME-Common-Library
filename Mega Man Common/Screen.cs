@@ -47,7 +47,7 @@ namespace MegaMan
         public int PixelWidth { get { return tiles[0].Length * Tileset.TileSize; } }
         public int PixelHeight { get { return tiles.GetLength(0) * Tileset.TileSize; } }
         public Tileset Tileset { get; set; }
-        public bool Dirty { get { return dirty; } private set { dirty = value; Map.Dirty = value; } }
+        public bool Dirty { get { return dirty; } internal set { dirty = value; if (value) Map.Dirty = true; } }
         public bool IsBossRoom { get; private set; }
         #endregion Properties
 

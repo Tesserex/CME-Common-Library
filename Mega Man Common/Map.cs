@@ -393,6 +393,8 @@ namespace MegaMan
             {
                 Screens[i].Save(directory + "\\" + i.ToString() + ".scn");
             }
+
+            Dirty = false;
         }
     }
 }

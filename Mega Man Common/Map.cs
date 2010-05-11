@@ -292,8 +292,9 @@ namespace MegaMan
 
             writer.WriteStartElement("Map");
             writer.WriteAttributeString("name", Name);
-            // to do: turn it back to relative
-            writer.WriteAttributeString("tiles", TilePath);
+
+            string relpath = PathToRelative(TilePath, directory);
+            writer.WriteAttributeString("tiles", relpath);
 
             if (this.MusicIntroPath != null || this.MusicLoopPath != null)
             {
@@ -395,6 +396,39 @@ namespace MegaMan
             }
 
             Dirty = false;
+        }
+
+        // this doesn't work for files on different drives
+        // also right now relativeTo should not have a trailing slash.
+        private string PathToRelative(string path, string relativeTo)
+        {
+            if (System.IO.Path.HasExtension(relativeTo))
+            {
+                relativeTo = System.IO.Path.GetDirectoryName(relativeTo);
+            }
+            path = System.IO.Path.GetFullPath(path);
+
+            // split into directories
+            string[] pathdirs = path.Split(System.IO.Path.DirectorySeparatorChar);
+            string[] reldirs = relativeTo.Split(System.IO.Path.DirectorySeparatorChar);
+
+            int length = Math.Min(pathdirs.Length, reldirs.Length);
+            StringBuilder relativePath = new StringBuilder();
+
+            // find where the paths differ
+            int forkpoint = 0;
+            while (forkpoint < length && pathdirs[forkpoint] == reldirs[forkpoint]) forkpoint++;
+
+            // go back by the number of directories in the relativeTo path
+            int dirs = reldirs.Length - forkpoint;
+            for (int i = 0; i < dirs; i++) relativePath.Append("..").Append(System.IO.Path.DirectorySeparatorChar);
+
+            // append file path from that directory
+            for (int i = forkpoint; i < pathdirs.Length - 1; i++) relativePath.Append(pathdirs[i]).Append(System.IO.Path.DirectorySeparatorChar);
+            // append file, without directory separator
+            relativePath.Append(pathdirs[pathdirs.Length - 1]);
+
+            return relativePath.ToString();
         }
     }
 }

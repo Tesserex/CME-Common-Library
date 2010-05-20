@@ -1,61 +1,58 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Drawing;
 using System.Xml.Linq;
+using System.IO;
 
 namespace MegaMan
 {
-    public enum JoinType : int
-    {
+    public enum JoinType : int {
         Horizontal = 1,
         Vertical = 2
     }
 
-    public enum JoinDirection : int
-    {
+    public enum JoinDirection : int {
         Both = 1,
-        /// <summary>
-        /// The player can only cross the join left to right, or top to bottom
-        /// </summary>
+        // <summary>
+        // The player can only cross the join left to right, or top to bottom
+        // </summary>
         ForwardOnly = 2,
-        /// <summary>
-        /// The player can only cross the join right to left, or bottom to top
-        /// </summary>
+        // <summary>
+        // The player can only cross the join right to left, or bottom to top
+        // </summary>
         BackwardOnly = 3
     }
 
-    public struct Join
-    {
+    public struct Join {
         public JoinType type;
         public string screenOne, screenTwo;
-        /// <summary>
-        /// The number of tiles from the top (if vertical) or left (if horizontal) of screenOne at which the join begins.
-        /// </summary>
+        // <summary>
+        // The number of tiles from the top (if vertical) or left (if horizontal) of screenOne at which the join begins.
+        // </summary>
         public int offsetOne;
-        /// <summary>
-        /// The number of tiles from the top (if vertical) or left (if horizontal) of screenTwo at which the join begins.
-        /// </summary>
+        // <summary>
+        // The number of tiles from the top (if vertical) or left (if horizontal) of screenTwo at which the join begins.
+        // </summary>
         public int offsetTwo;
-        /// <summary>
-        /// The size extent of the join, in tiles.
-        /// </summary>
+        // <summary>
+        // The size extent of the join, in tiles.
+        // </summary>
         public int Size;
-        /// <summary>
-        /// Whether the join allows the player to cross only one way or in either direction.
-        /// </summary>
+        // <summary>
+        // Whether the join allows the player to cross only one way or in either direction.
+        // </summary>
         public JoinDirection direction;
-        /// <summary>
-        /// Whether this join has a boss-style door over it.
-        /// </summary>
+        // <summary>
+        // Whether this join has a boss-style door over it.
+        // </summary>
         public bool bossDoor;
         public string bossEntityName;
     }
 
-    public class Map
-    {
+    public class Map {
         private Dictionary<string, Point> continuePoints;
         public IDictionary<string, Point> ContinuePoints { get { return continuePoints; } }
 
@@ -82,11 +79,13 @@ namespace MegaMan
         {
             get
             {
-                if (dirty == true) return true;
+                if (dirty == true) 
+                    return true;
+
                 foreach (Screen screen in Screens.Values)
-                {
-                    if (screen.Dirty) return true;
-                }
+                    if (screen.Dirty) 
+                        return true;
+
                 return false;
             }
             set
@@ -100,41 +99,158 @@ namespace MegaMan
 
         public event Action<bool> DirtyChanged;
 
-        public Map()
+        public Map() 
         {
             Screens = new Dictionary<string, Screen>();
             Joins = new List<Join>();
             continuePoints = new Dictionary<string, Point>();
         }
 
-        public Map(string directory) : this()
+        // <summary>
+        // Map - Load the map xml.
+        // 
+        // rootPath should be absolute.
+        // mapDirectory should be relative to rootPath
+        // 
+        // Ex:
+        //     rootPath = "C:\MegaMan\MyCoolGame\"
+        //     
+        //     mapDirectory = "level1\"
+        //     
+        //     Will load: "C:\MegaMan\MyCoolGame\level1\" as the full path
+        // </summary>
+        public Map(string rootPath, string mapDirectory) : this() 
         {
-            FileDir = directory;
+            LoadMapXml(rootPath, mapDirectory);
+        }
 
-            XElement mapXml = XElement.Load(System.IO.Path.Combine(directory, "map.xml"));
-            Name = System.IO.Path.GetFileNameWithoutExtension(directory);
+        // <summary>
+        // Load the map xml.
+        // Assumed that the current directory is the root directory
+        // </summary>
+        public Map(string directory) : this() 
+        {
+            LoadMapXml(Directory.GetCurrentDirectory(), directory);
+        }
 
-            TilePath = mapXml.Attribute("tiles").Value;
+        // <summary>
+        // LoadMapXml - Load the map xml. 
+        // 
+        // rootPath should be absolute. 
+        // mapDirectory should be relative to rootPath
+        // 
+        // Ex: 
+        // 
+        //   rootPath = "C:\MegaMan\MyCoolGame\"
+        //   
+        //   mapDirectory = "level1\"
+        //   
+        //   Will load: "C:\MegaMan\MyCoolGame\level1\" as the full path
+        //   
+        // </summary>
+        public void LoadMapXml(string rootPath, string mapDirectory) 
+        {
+            FileDir = System.IO.Path.Combine(rootPath, mapDirectory);
 
-            TilePath = System.IO.Path.Combine(directory, TilePath);
-            Tileset = new Tileset(TilePath);
+            var mapXml = XElement.Load(Path.Combine(FileDir, "map.xml"));
+            Name = Path.GetFileNameWithoutExtension(FileDir);
 
-            XElement music = mapXml.Element("Music");
-            if (music != null)
-            {
-                XElement intro = music.Element("Intro");
-                XElement loop = music.Element("Loop");
-                MusicIntroPath = (intro != null) ? intro.Value : null;
-                MusicLoopPath = (loop != null) ? loop.Value : null;
-            }
+            var relativeTilePath = mapXml.Attribute("tiles").Value;
+            TilePath = Path.Combine(FileDir, relativeTilePath);
+
+            var stageTilePath = Path.Combine(mapDirectory, relativeTilePath);
+            Tileset = new Tileset(rootPath, stageTilePath);
 
             PlayerStartX = 3;
             PlayerStartY = 3;
 
+            LoadMusicXml(mapXml);
+            LoadScreenXml(mapXml);
+
+            XElement start = mapXml.Element("Start");
+            if (start != null) 
+            {
+                StartScreen = start.Attribute("screen").Value;
+                PlayerStartX = Int32.Parse(start.Attribute("x").Value);
+                PlayerStartY = Int32.Parse(start.Attribute("y").Value);
+            }
+
+            foreach (XElement contPoint in mapXml.Elements("Continue")) 
+            {
+                string screen = contPoint.Attribute("screen").Value;
+                int x = int.Parse(contPoint.Attribute("x").Value);
+                int y = int.Parse(contPoint.Attribute("y").Value);
+                continuePoints.Add(screen, new Point(x, y));
+            }
+
+            foreach (XElement join in mapXml.Elements("Join")) 
+            {
+                string t = join.Attribute("type").Value;
+                JoinType type;
+                if (t.ToLower() == "horizontal") type = JoinType.Horizontal;
+                else if (t.ToLower() == "vertical") type = JoinType.Vertical;
+                else throw new Exception("map.xml file contains invalid join type.");
+
+                string s1 = join.Attribute("s1").Value;
+                string s2 = join.Attribute("s2").Value;
+                int offset1 = Int32.Parse(join.Attribute("offset1").Value);
+                int offset2 = Int32.Parse(join.Attribute("offset2").Value);
+                int size = Int32.Parse(join.Attribute("size").Value);
+
+                JoinDirection direction;
+                XAttribute dirAttr = join.Attribute("direction");
+                if (dirAttr == null || dirAttr.Value.ToUpper() == "BOTH") direction = JoinDirection.Both;
+                else if (dirAttr.Value.ToUpper() == "FORWARD") direction = JoinDirection.ForwardOnly;
+                else if (dirAttr.Value.ToUpper() == "BACKWARD") direction = JoinDirection.BackwardOnly;
+                else throw new Exception("map.xml file contains invalid join direction.");
+
+                string bosstile = null;
+                XAttribute bossAttr = join.Attribute("bossdoor");
+                bool bossdoor = (bossAttr != null);
+                if (bossdoor) bosstile = bossAttr.Value;
+
+                Join j = new Join();
+                j.direction = direction;
+                j.screenOne = s1;
+                j.screenTwo = s2;
+                j.offsetOne = offset1;
+                j.offsetTwo = offset2;
+                j.type = type;
+                j.Size = size;
+                j.bossDoor = bossdoor;
+                j.bossEntityName = bosstile;
+
+                Joins.Add(j);
+            }
+
+            Loaded = true;
+            Dirty = false;
+        }
+
+        /* *
+         * LoadMusicXml - Load xml data for music
+         * */
+        public void LoadMusicXml(XElement mapXml) 
+        {
+            var music = mapXml.Element("Music");
+            if (music != null) 
+            {
+                var intro = music.Element("Intro");
+                var loop = music.Element("Loop");
+                MusicIntroPath = (intro != null) ? intro.Value : null;
+                MusicLoopPath = (loop != null) ? loop.Value : null;
+            }
+        }
+
+        /* *
+         * LoadScreenXml - Load xml data for screens
+         * */
+        public void LoadScreenXml(XElement mapXml) 
+        {
             foreach (XElement screen in mapXml.Elements("Screen"))
             {
                 string id = screen.Attribute("id").Value;
-                Screen s = new Screen(directory + "\\" + id + ".scn", this);
+                Screen s = new Screen(FileDir + "\\" + id + ".scn", this);
                 Screens.Add(id, s);
                 if (Screens.Count == 1)
                 {
@@ -201,75 +317,16 @@ namespace MegaMan
 
                 s.Dirty = false;
             }
-
-            XElement start = mapXml.Element("Start");
-            if (start != null)
-            {
-                StartScreen = start.Attribute("screen").Value;
-                PlayerStartX = Int32.Parse(start.Attribute("x").Value);
-                PlayerStartY = Int32.Parse(start.Attribute("y").Value);
-            }
-
-            foreach (XElement contPoint in mapXml.Elements("Continue"))
-            {
-                string screen = contPoint.Attribute("screen").Value;
-                int x = int.Parse(contPoint.Attribute("x").Value);
-                int y = int.Parse(contPoint.Attribute("y").Value);
-                continuePoints.Add(screen, new Point(x, y));
-            }
-
-            foreach (XElement join in mapXml.Elements("Join"))
-            {
-                string t = join.Attribute("type").Value;
-                JoinType type;
-                if (t.ToLower() == "horizontal") type = JoinType.Horizontal;
-                else if (t.ToLower() == "vertical") type = JoinType.Vertical;
-                else throw new Exception("map.xml file contains invalid join type.");
-
-                string s1 = join.Attribute("s1").Value;
-                string s2 = join.Attribute("s2").Value;
-                int offset1 = Int32.Parse(join.Attribute("offset1").Value);
-                int offset2 = Int32.Parse(join.Attribute("offset2").Value);
-                int size = Int32.Parse(join.Attribute("size").Value);
-
-                JoinDirection direction;
-                XAttribute dirAttr = join.Attribute("direction");
-                if (dirAttr == null || dirAttr.Value.ToUpper() == "BOTH") direction = JoinDirection.Both;
-                else if (dirAttr.Value.ToUpper() == "FORWARD") direction = JoinDirection.ForwardOnly;
-                else if (dirAttr.Value.ToUpper() == "BACKWARD") direction = JoinDirection.BackwardOnly;
-                else throw new Exception("map.xml file contains invalid join direction.");
-
-                string bosstile = null;
-                XAttribute bossAttr = join.Attribute("bossdoor");
-                bool bossdoor = (bossAttr != null);
-                if (bossdoor) bosstile = bossAttr.Value;
-
-                Join j = new Join();
-                j.direction = direction;
-                j.screenOne = s1;
-                j.screenTwo = s2;
-                j.offsetOne = offset1;
-                j.offsetTwo = offset2;
-                j.type = type;
-                j.Size = size;
-                j.bossDoor = bossdoor;
-                j.bossEntityName = bosstile;
-
-                Joins.Add(j);
-            }
-
-            Loaded = true;
-            Dirty = false;
         }
 
-        public void ChangeTileset(string path)
+        public void ChangeTileset(string path) 
         {
             Tileset = new Tileset(path);
             TilePath = path;
             foreach (Screen s in Screens.Values) s.Tileset = Tileset;
         }
 
-        public void Clear()
+        public void Clear() 
         {
             Screens.Clear();
             Joins.Clear();
@@ -341,6 +398,7 @@ namespace MegaMan
                     writer.WriteAttributeString("right", pattern.RightBoundary.ToString());
                     writer.WriteAttributeString("length", pattern.Length.ToString());
                     writer.WriteAttributeString("entity", pattern.Entity);
+
                     foreach (BlockPatternInfo.BlockInfo block in pattern.Blocks)
                     {
                         writer.WriteStartElement("Block");
@@ -353,7 +411,7 @@ namespace MegaMan
                     writer.WriteEndElement();
                 }
 
-                foreach (TeleportInfo teleport in Screens[id].Teleports)
+                foreach (TeleportInfo teleport in Screens[id].Teleports) 
                 {
                     writer.WriteStartElement("Teleport");
                     writer.WriteAttributeString("from_x", teleport.From.X.ToString());
@@ -390,8 +448,7 @@ namespace MegaMan
             writer.WriteEndElement();
             writer.Close();
 
-            foreach (string i in Screens.Keys)
-            {
+            foreach (string i in Screens.Keys) {
                 Screens[i].Save(directory + "\\" + i.ToString() + ".scn");
             }
 

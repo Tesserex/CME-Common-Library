@@ -1,9 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.IO;
+using Microsoft.Xna.Framework.Graphics;
+using XnaColor = Microsoft.Xna.Framework.Graphics.Color;
 
 namespace MegaMan
 {
@@ -39,7 +41,7 @@ namespace MegaMan
         public List<EnemyCopyInfo> EnemyInfo { get; private set; }
         public List<BlockPatternInfo> BlockPatternInfo { get; private set; }
         public List<TeleportInfo> Teleports { get; private set; }
-
+        
         #region Properties
         public string Name { get; set; }
         public int Width { get { return tiles[0].Length; } }
@@ -47,8 +49,23 @@ namespace MegaMan
         public int PixelWidth { get { return tiles[0].Length * Tileset.TileSize; } }
         public int PixelHeight { get { return tiles.GetLength(0) * Tileset.TileSize; } }
         public Tileset Tileset { get; set; }
-        public bool Dirty { get { return dirty; } internal set { dirty = value; if (value) Map.Dirty = true; } }
+
         public bool IsBossRoom { get; private set; }
+
+        public bool Dirty 
+        { 
+            get 
+            { 
+                return dirty; 
+            } 
+            
+            set 
+            { 
+                dirty = value; 
+                Map.Dirty = value; 
+            } 
+        }
+
         #endregion Properties
 
         public Screen(int width, int height, Map parent)
@@ -90,18 +107,38 @@ namespace MegaMan
             BlockPatternInfo = new List<BlockPatternInfo>();
             Teleports = new List<TeleportInfo>();
         }
-
-        public void Resize(int width, int height)
+        
+        public void Resize(int width, int height) 
         {
-            tiles = new int[height][];
-            for (int y = 0; y < height; y++)
+            var newTiles = CreateNewTiles(width, height);
+
+            if (this.tiles != null)
+                CopyOldTiles(width, height, newTiles);
+
+            this.tiles = newTiles;
+        }
+
+        public void CopyOldTiles(int width, int height, int[][] newTiles) 
+        {
+            // Copy over old tiles
+            int minWidth = (width < tiles[0].Length) ? width : tiles[0].Length;
+            int minHeight = (height < tiles.Length) ? height : tiles.Length;
+
+            for (int j = 0; j < minHeight; j++) 
+                for (int i = 0; i < minWidth; i++) 
+                    newTiles[j][i] = tiles[j][i];
+        }
+
+        public int[][] CreateNewTiles(int width, int height) 
+        {
+            var newTiles = new int[height][];
+            for (int y = 0; y < height; y++) 
             {
-                tiles[y] = new int[width];
-                for (int x = 0; x < width; x++)
-                {
-                    tiles[y][x] = 0;
-                }
+                newTiles[y] = new int[width];
+                for (int x = 0; x < width; x++) 
+                    newTiles[y][x] = 0;
             }
+            return newTiles;
         }
 
         public Tile TileAt(int x, int y)
@@ -109,7 +146,7 @@ namespace MegaMan
             if (x < 0 || y < 0 || x >= Width || y >= Height) return null;
             return Tileset[tiles[y][x]];
         }
-
+        
         public int? TileIndexAt(int x, int y)
         {
             if (x < 0 || y < 0 || x >= Width || y >= Height) return null;
@@ -136,8 +173,12 @@ namespace MegaMan
 
         public void ChangeTile(int x, int y, int tile)
         {
-            if (y < 0 || y >= Height || x < 0 || x >= Width) return;
-            if (tile < 0 || tile >= Tileset.Count) throw new ArgumentException("Tile is not within tileset range");
+            if (y < 0 || y >= Height || x < 0 || x >= Width) 
+                return;
+
+            if (tile < 0 || tile >= Tileset.Count) 
+                throw new ArgumentException("Tile is not within tileset range");
+
             tiles[y][x] = tile;
 
             Dirty = true;
@@ -145,7 +186,14 @@ namespace MegaMan
 
         public void Draw(Graphics g, float off_x, float off_y, int width, int height)
         {
-            if (Tileset == null) throw new InvalidOperationException("Screen has no tileset to draw with.");
+            Draw(g, off_x, off_y, width, height, (img) => { return img; });
+        }
+
+        public void Draw(Graphics g, float off_x, float off_y, int width, int height, Func<Image, Image> transform)
+        {
+            if (Tileset == null) 
+                throw new InvalidOperationException("Screen has no tileset to draw with.");
+
             for (int y = 0; y < Height; y++)
             {
                 for (int x = 0; x < Width; x++)
@@ -155,14 +203,16 @@ namespace MegaMan
 
                     if (xpos + Tileset.TileSize < 0 || ypos + Tileset.TileSize < 0) continue;
                     if (xpos > width || ypos > height) continue;
-                    Tileset[tiles[y][x]].Draw(g, xpos, ypos);
+                    Tileset[tiles[y][x]].Draw(g, xpos, ypos, transform);
                 }
             }
         }
-
-        public void DrawXna(Microsoft.Xna.Framework.Graphics.SpriteBatch batch, Microsoft.Xna.Framework.Graphics.Color color, float off_x, float off_y, int width, int height)
+                
+        public void DrawXna(SpriteBatch batch, XnaColor color, float off_x, float off_y, int width, int height)
         {
-            if (Tileset == null) throw new InvalidOperationException("Screen has no tileset to draw with.");
+            if (Tileset == null) 
+                throw new InvalidOperationException("Screen has no tileset to draw with.");
+
             for (int y = 0; y < Height; y++)
             {
                 for (int x = 0; x < Width; x++)
@@ -196,7 +246,6 @@ namespace MegaMan
                 }
                 f.Close();
             }
-
             Dirty = false;
         }
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -138,7 +138,14 @@ namespace MegaMan
         public string Name { get; set; }
         public Sprite Sprite { get; protected set; }
         public float Width { get { return Sprite.Width; } }
-        public float Height { get { return Sprite.Height; } }
+        public float Height 
+        { 
+            get 
+            { 
+                return Sprite.Height; 
+            } 
+        }
+
         public TileProperties Properties { get; set; }
 
         public Tile(int id, Sprite sprite)
@@ -149,14 +156,21 @@ namespace MegaMan
             Properties = TileProperties.Default;
         }
 
-        public void Draw(Graphics g, float posX, float posY)
+        public void Draw(Graphics g, float posX, float posY) 
         {
-            if (Sprite != null) Sprite.Draw(g, (int)posX, (int)posY);
+            Draw(g, posX, posY, (img) => { return img; });
+        }
+
+        public void Draw(Graphics g, float posX, float posY, Func<Image, Image> transform) 
+        {
+            if (Sprite != null) 
+                Sprite.Draw(g, (int)posX, (int)posY, transform);
         }
 
         public void Draw(Microsoft.Xna.Framework.Graphics.SpriteBatch batch, Microsoft.Xna.Framework.Graphics.Color color, float posX, float posY)
         {
-            if (Sprite != null) Sprite.DrawXna(batch, color, (int)posX, (int)posY);
+            if (Sprite != null) 
+                Sprite.DrawXna(batch, color, (int)posX, (int)posY);
         }
     }
 }

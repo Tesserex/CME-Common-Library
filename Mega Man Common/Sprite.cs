@@ -1,11 +1,18 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
 using System.IO;
 using System.Xml;
 using System.Xml.Linq;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+
+using DrawPoint     = System.Drawing.Point;
+using DrawRectangle = System.Drawing.Rectangle;
+
+using XnaRectangle  = Microsoft.Xna.Framework.Rectangle;
+using XnaColor      = Microsoft.Xna.Framework.Graphics.Color;
 
 namespace MegaMan
 {
@@ -36,7 +43,7 @@ namespace MegaMan
         /// <summary>
         /// Gets or sets the point representing the drawing offset for the sprite.
         /// </summary>
-        public Point HotSpot { get; set; }
+        public DrawPoint HotSpot { get; set; }
 
         /// <summary>
         /// Gets a rectangle representing the box surrounding the sprite.
@@ -59,7 +66,7 @@ namespace MegaMan
         public int Count { get { return frames.Count; } }
 
         public int CurrentFrame { get { return this.currentFrame; } set { this.currentFrame = value; } }
-
+        
         public int FrameTime { get { return this.lastFrameTime; } set { this.lastFrameTime = value; } }
 
         public string Name { get; private set; }
@@ -96,7 +103,7 @@ namespace MegaMan
 
             this.currentFrame = 0;
             this.lastFrameTime = 0;
-            this.HotSpot = new Point(0, 0);
+            this.HotSpot = new DrawPoint(0, 0);
             this.BoundBox = new RectangleF(0, 0, Width, Height);
             this.Playing = false;
             this.Visible = true;
@@ -113,7 +120,7 @@ namespace MegaMan
             this.frames = copy.frames;
             this.currentFrame = 0;
             this.lastFrameTime = 0;
-            this.HotSpot = new Point(copy.HotSpot.X, copy.HotSpot.Y);
+            this.HotSpot = new DrawPoint(copy.HotSpot.X, copy.HotSpot.Y);
             this.BoundBox = new RectangleF(0, 0, copy.Width, copy.Height);
             this.Playing = false;
             this.Visible = true;
@@ -144,7 +151,7 @@ namespace MegaMan
         /// </summary>
         public void AddFrame()
         {
-            frames.Add(new SpriteFrame(this.sheet, 0, Rectangle.Empty));
+            frames.Add(new SpriteFrame(this.sheet, 0, DrawRectangle.Empty));
             CheckTickable();
         }
 
@@ -157,7 +164,7 @@ namespace MegaMan
         /// <param name="duration">The duration of the frame, in game ticks.</param>
         public void AddFrame(Image tilesheet, int x, int y, int duration)
         {
-            this.frames.Add(new SpriteFrame(tilesheet, duration, new Rectangle(x, y, this.Width, this.Height)));
+            this.frames.Add(new SpriteFrame(tilesheet, duration, new DrawRectangle(x, y, this.Width, this.Height)));
             CheckTickable();
         }
 
@@ -191,7 +198,12 @@ namespace MegaMan
         /// <param name="graphics">The graphics surface on which to draw the sprite.</param>
         /// <param name="posX">The x-coordinate at which to draw the sprite.</param>
         /// <param name="posY">The y-coordinate at which to draw the sprite.</param>
-        public void Draw(Graphics graphics, float positionX, float positionY)
+        public void Draw(Graphics graphics, float positionX, float positionY) 
+        {
+            Draw(graphics, positionX, positionY, (img) => { return img; });
+        }
+
+        public void Draw(Graphics graphics, float positionX, float positionY, Func<Image, Image> transform)
         {
             if (!Visible || frames.Count == 0) return;
             if (this.frames[currentFrame].Image == null)
@@ -201,11 +213,12 @@ namespace MegaMan
             }
 
             bool horiz = this.HorizontalFlip;
-            if (this.Reversed) horiz = !horiz;
-            this.frames[currentFrame].Draw(graphics, positionX - this.HotSpot.X, positionY - this.HotSpot.Y, horiz, this.VerticalFlip);
+            if (this.Reversed) 
+                horiz = !horiz;
+            this.frames[currentFrame].Draw(graphics, positionX - this.HotSpot.X, positionY - this.HotSpot.Y, horiz, this.VerticalFlip, transform);
         }
 
-        public void DrawXna(SpriteBatch batch, Microsoft.Xna.Framework.Graphics.Color color, float positionX, float positionY)
+        public void DrawXna(SpriteBatch batch, XnaColor color, float positionX, float positionY)
         {
             if (!Visible || frames.Count == 0 || batch == null || this.texture == null) return;
 
@@ -217,11 +230,11 @@ namespace MegaMan
             int hy = VerticalFlip ? this.Height - this.HotSpot.Y : this.HotSpot.Y;
 
             batch.Draw(this.texture,
-                new Microsoft.Xna.Framework.Rectangle((int)(positionX),
+                new XnaRectangle((int)(positionX),
                     (int)(positionY), this.Width, this.Height),
-                new Microsoft.Xna.Framework.Rectangle(this[currentFrame].SheetLocation.X, this[currentFrame].SheetLocation.Y, this[currentFrame].SheetLocation.Width, this[currentFrame].SheetLocation.Height),
+                new XnaRectangle(this[currentFrame].SheetLocation.X, this[currentFrame].SheetLocation.Y, this[currentFrame].SheetLocation.Width, this[currentFrame].SheetLocation.Height),
                 color, 0,
-                new Microsoft.Xna.Framework.Vector2(hx, hy), effect, 0);
+                new Vector2(hx, hy), effect, 0);
         }
 
         private bool tickable;
@@ -229,15 +242,16 @@ namespace MegaMan
         private void CheckTickable()
         {
             tickable = false;
-            if (frames.Count <= 1) return;
+            if (frames.Count <= 1) 
+                return;
             else foreach (SpriteFrame frame in frames)
+            {
+                if (frame.Duration > 0)
                 {
-                    if (frame.Duration > 0)
-                    {
-                        tickable = true;
-                        break;
-                    }
+                    tickable = true;
+                    break;
                 }
+            }
         }
 
         /// <summary>
@@ -352,7 +366,7 @@ namespace MegaMan
                     case "Hotspot":
                         int hx = Int32.Parse(reader.GetAttribute("x"));
                         int hy = Int32.Parse(reader.GetAttribute("y"));
-                        sprite.HotSpot = new Point(hx, hy);
+                        sprite.HotSpot = new DrawPoint(hx, hy);
                         break;
 
                     case "AnimStyle":
@@ -410,7 +424,7 @@ namespace MegaMan
             {
                 int hx = Int32.Parse(hotspot.Attribute("x").Value);
                 int hy = Int32.Parse(hotspot.Attribute("y").Value);
-                sprite.HotSpot = new Point(hx, hy);
+                sprite.HotSpot = new DrawPoint(hx, hy);
             }
 
             XAttribute layerAttr = element.Attribute("layer");
@@ -506,14 +520,14 @@ namespace MegaMan
         /// </summary>
         public Image Image { get; private set; }
         public Image CutTile { get { return cutTile; } }
-        public Rectangle SheetLocation { get; private set; }
+        public DrawRectangle SheetLocation { get; private set; }
 
         /// <summary>
         /// Gets or sets the number of ticks that this image should be displayed.
         /// </summary>
         public int Duration { get; set; }
 
-        public SpriteFrame(Image img, int duration, Rectangle sheetRect)
+        public SpriteFrame(Image img, int duration, DrawRectangle sheetRect)
         {
             this.Image = img;
             this.Duration = duration;
@@ -522,7 +536,7 @@ namespace MegaMan
             CutoutTile();
         }
 
-        public void SetSheetPosition(Rectangle rect)
+        public void SetSheetPosition(DrawRectangle rect)
         {
             SheetLocation = rect;
             CutoutTile();
@@ -530,16 +544,21 @@ namespace MegaMan
 
         private void CutoutTile()
         {
-            if (this.Image == null || this.SheetLocation == Rectangle.Empty) return;
+            if (this.Image == null || this.SheetLocation == DrawRectangle.Empty) return;
             if (this.cutTile != null) this.cutTile.Dispose();
             this.cutTile = new Bitmap(SheetLocation.Width, SheetLocation.Height);
             using (Graphics g = Graphics.FromImage(cutTile))
             {
-                g.DrawImage(Image, new Rectangle(0, 0, SheetLocation.Width, SheetLocation.Height), SheetLocation.X, SheetLocation.Y, SheetLocation.Width, SheetLocation.Height, GraphicsUnit.Pixel);
+                g.DrawImage(Image, new DrawRectangle(0, 0, SheetLocation.Width, SheetLocation.Height), SheetLocation.X, SheetLocation.Y, SheetLocation.Width, SheetLocation.Height, GraphicsUnit.Pixel);
             }
         }
 
-        public void Draw(Graphics g, float positionX, float positionY, bool hflip, bool vflip)
+        public void Draw(Graphics g, float positionX, float positionY, bool hflip, bool vflip) 
+        {
+            Draw(g, positionX, positionY, hflip, vflip, (img) => { return img; });
+        }
+
+        public void Draw(Graphics g, float positionX, float positionY, bool hflip, bool vflip, Func<Image,Image> transform) 
         {
             int trueX, trueY;
             if (hflip)
@@ -549,24 +568,25 @@ namespace MegaMan
             }
             else trueX = SheetLocation.Left;
 
-            if (vflip)
+            if (vflip) 
             {
                 this.Image.RotateFlip(RotateFlipType.RotateNoneFlipY);
                 trueY = (int)(Image.Height - SheetLocation.Bottom);
             }
-            else trueY = SheetLocation.Top;
+            else 
+                trueY = SheetLocation.Top;
 
-            if (this.cutTile == null) g.FillRectangle(Brushes.Black, positionX, positionY, this.SheetLocation.Width, this.SheetLocation.Height);
-            else g.DrawImage(this.cutTile, positionX, positionY, cutTile.Width, cutTile.Height);
+            if (this.cutTile == null) 
+                g.FillRectangle(Brushes.Black, positionX, positionY, this.SheetLocation.Width, this.SheetLocation.Height);
+            else
+                g.DrawImage(transform(this.cutTile), positionX, positionY, cutTile.Width, cutTile.Height);
 
-            if (hflip)
-            {
+            if (hflip) 
                 this.Image.RotateFlip(RotateFlipType.RotateNoneFlipX);
-            }
-            if (vflip)
-            {
+
+            if (vflip) 
                 this.Image.RotateFlip(RotateFlipType.RotateNoneFlipY);
-            }
+            
         }
     }
 

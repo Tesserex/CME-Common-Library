@@ -10,23 +10,23 @@ namespace MegaMan
 {
     public class TileProperties
     {
-        public string Name { get; private set; }
-        public bool Blocking { get; private set; }
-        public bool Climbable { get; private set; }
-        public bool Lethal { get; private set; }
-        public float PushMultX { get; private set; }
-        public float PushMultY { get; private set; }
-        public float PushConstX { get; private set; }
-        public float PushConstY { get; private set; }
-        public float ResistMultX { get; private set; }
-        public float ResistMultY { get; private set; }
-        public float ResistConstX { get; private set; }
-        public float ResistConstY { get; private set; }
-        public float GravityMult { get; private set; }
+        public string Name { get; set; }
+        public bool Blocking { get; set; }
+        public bool Climbable { get; set; }
+        public bool Lethal { get; set; }
+        public float PushMultX { get; set; }
+        public float PushMultY { get; set; }
+        public float PushConstX { get; set; }
+        public float PushConstY { get; set; }
+        public float ResistMultX { get; set; }
+        public float ResistMultY { get; set; }
+        public float ResistConstX { get; set; }
+        public float ResistConstY { get; set; }
+        public float GravityMult { get; set; }
 
         private static TileProperties def = new TileProperties();
         public static TileProperties Default { get { return def; } }
-        private TileProperties()
+        public TileProperties()
         {
             this.Name = "Default";
             this.PushMultX = 1;

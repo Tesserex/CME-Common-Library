@@ -12,9 +12,15 @@ namespace MegaMan
     public class Tileset : List<Tile>
     {
         private Dictionary<string, TileProperties> properties;
-        public IDictionary<string, TileProperties> Properties { get { return properties; } }
+        public IEnumerable<TileProperties> Properties { get { return properties.Values; } }
 
         public Image Sheet { get; private set; }
+
+        private string absSheetPath;
+
+        /// <summary>
+        /// SheetPath should be local, not absolute
+        /// </summary>
         public string SheetPath { get; set; }
         public string FilePath { get; set; }
 
@@ -44,7 +50,7 @@ namespace MegaMan
         }
 
         // Use this to specify the tileset path, assuming root path is current directory
-        public Tileset(string path) 
+        public Tileset(string path)
         {
             LoadTilesetXml(Directory.GetCurrentDirectory(), path);
         }
@@ -59,7 +65,7 @@ namespace MegaMan
         //      tilesetPath = "level1\level1.xml"
         //      
         // Will load: "C:\MegaMan\MyCoolGame\level1\level1.xml" as the full path
-        public void LoadTilesetXml(string rootPath, string tilesetPath) 
+        private void LoadTilesetXml(string rootPath, string tilesetPath) 
         {
             this.properties = new Dictionary<string, TileProperties>();
 
@@ -70,13 +76,21 @@ namespace MegaMan
             if (reader == null)
                 throw new Exception("The specified tileset definition file does not contain a Tileset tag.");
 
-            var stageDirectory = Directory.GetParent(tilesetPath).Name;
-            var tilesheetPath = Path.Combine(Path.Combine(Path.Combine(rootPath, "stages"), stageDirectory), reader.Attribute("tilesheet").Value);
-            SheetPath = Path.Combine(rootPath, tilesheetPath);
+            string sheetDirectory = Directory.GetParent(FilePath).FullName;
+            SheetPath = reader.Attribute("tilesheet").Value;
+            absSheetPath = Path.Combine(sheetDirectory, SheetPath);
+
+            // if the file has an absolute, it must be made relative in order to be protable between computers
+            if (Path.IsPathRooted(SheetPath))
+            {
+                // the parent directory is the only safe assumption we can make about the path
+                // without locking everyone into a specific game file structure
+                SheetPath = Map.PathToRelative(SheetPath, sheetDirectory);
+            }
 
             try 
             {
-                Sheet = Bitmap.FromFile(SheetPath);
+                Sheet = Bitmap.FromFile(absSheetPath);
             } 
             catch (FileNotFoundException err) 
             {
@@ -130,7 +144,7 @@ namespace MegaMan
 
         public void SetTextures(Microsoft.Xna.Framework.Graphics.GraphicsDevice device)
         {
-            Microsoft.Xna.Framework.Graphics.Texture2D tex = Microsoft.Xna.Framework.Graphics.Texture2D.FromFile(device, this.SheetPath);
+            Microsoft.Xna.Framework.Graphics.Texture2D tex = Microsoft.Xna.Framework.Graphics.Texture2D.FromFile(device, this.absSheetPath);
             foreach (Tile tile in this)
             {
                 tile.Sprite.SetTexture(tex);
@@ -149,6 +163,17 @@ namespace MegaMan
             sprite.sheet = this.Sheet;
             base.Add(new Tile(this.Count, sprite));
             if (TileAdded != null) TileAdded();
+        }
+
+        public TileProperties GetProperties(string name)
+        {
+            if (properties.ContainsKey(name)) return properties[name];
+            return TileProperties.Default;
+        }
+
+        public void AddProperties(TileProperties properties)
+        {
+            this.properties[properties.Name] = properties;
         }
 
         public void Save()

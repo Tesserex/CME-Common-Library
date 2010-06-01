@@ -319,6 +319,18 @@ namespace MegaMan
             }
         }
 
+        public void RenameScreen(Screen screen, string name)
+        {
+            this.Screens.Remove(screen.Name);
+            screen.Name = name;
+            this.Screens.Add(name, screen);
+        }
+
+        public void RenameScreen(string oldName, string newName)
+        {
+            RenameScreen(this.Screens[oldName], newName);
+        }
+
         public void ChangeTileset(string path) 
         {
             Tileset = new Tileset(path);
@@ -457,7 +469,7 @@ namespace MegaMan
 
         // this doesn't work for files on different drives
         // also right now relativeTo should not have a trailing slash.
-        private string PathToRelative(string path, string relativeTo)
+        internal static string PathToRelative(string path, string relativeTo)
         {
             if (System.IO.Path.HasExtension(relativeTo))
             {

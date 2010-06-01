@@ -68,6 +68,8 @@ namespace MegaMan
 
         #endregion Properties
 
+        public event Action<int, int> Resized;
+
         public Screen(int width, int height, Map parent)
         {
             this.Map = parent;
@@ -116,6 +118,8 @@ namespace MegaMan
                 CopyOldTiles(width, height, newTiles);
 
             this.tiles = newTiles;
+
+            if (Resized != null) Resized(width, height);
         }
 
         public void CopyOldTiles(int width, int height, int[][] newTiles) 

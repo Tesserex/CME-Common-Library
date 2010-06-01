@@ -14,14 +14,12 @@ namespace MegaMan
         public bool Blocking { get; set; }
         public bool Climbable { get; set; }
         public bool Lethal { get; set; }
-        public float PushMultX { get; set; }
-        public float PushMultY { get; set; }
-        public float PushConstX { get; set; }
-        public float PushConstY { get; set; }
-        public float ResistMultX { get; set; }
-        public float ResistMultY { get; set; }
-        public float ResistConstX { get; set; }
-        public float ResistConstY { get; set; }
+        public float PushX { get; set; }
+        public float PushY { get; set; }
+        public float ResistX { get; set; }
+        public float ResistY { get; set; }
+        public float DragX { get; set; }
+        public float DragY { get; set; }
         public float GravityMult { get; set; }
 
         private static TileProperties def = new TileProperties();
@@ -29,10 +27,10 @@ namespace MegaMan
         public TileProperties()
         {
             this.Name = "Default";
-            this.PushMultX = 1;
-            this.PushMultY = 1;
-            this.ResistMultX = 1;
-            this.ResistMultY = 1;
+            this.DragX = 1;
+            this.DragY = 1;
+            this.ResistX = 1;
+            this.ResistY = 1;
             this.GravityMult = 1;
         }
 
@@ -64,44 +62,34 @@ namespace MegaMan
                         Lethal = b;
                         break;
 
-                    case "pushmultX":
-                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property pushmultX attribute was not a valid number.");
-                        PushMultX = f;
+                    case "pushX":
+                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property pushX attribute was not a valid number.");
+                        PushX = f;
                         break;
 
-                    case "pushmultY":
-                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property pushmultY attribute was not a valid number.");
-                        PushMultY = f;
+                    case "pushY":
+                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property pushY attribute was not a valid number.");
+                        PushY = f;
                         break;
 
-                    case "pushconstX":
-                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property pushconstX attribute was not a valid number.");
-                        PushConstX = f;
+                    case "resistX":
+                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property resistX attribute was not a valid number.");
+                        ResistX = f;
                         break;
 
-                    case "pushconstY":
-                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property pushconstY attribute was not a valid number.");
-                        PushConstY = f;
+                    case "resistY":
+                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property resistY attribute was not a valid number.");
+                        ResistY = f;
                         break;
 
-                    case "resistmultX":
-                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property resistmultX attribute was not a valid number.");
-                        ResistMultX = f;
+                    case "dragX":
+                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property dragX attribute was not a valid number.");
+                        DragX = f;
                         break;
 
-                    case "resistmultY":
-                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property resistmultY attribute was not a valid number.");
-                        ResistMultY = f;
-                        break;
-
-                    case "resistconstX":
-                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property resistconstX attribute was not a valid number.");
-                        ResistConstX = f;
-                        break;
-
-                    case "resistconstY":
-                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property resistconstY attribute was not a valid number.");
-                        ResistConstY = f;
+                    case "dragY":
+                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property dragY attribute was not a valid number.");
+                        DragY = f;
                         break;
 
                     case "gravitymult":
@@ -120,14 +108,12 @@ namespace MegaMan
             if (this.Climbable) writer.WriteAttributeString("climbable", "true");
             if (this.Lethal) writer.WriteAttributeString("lethal", "true");
             if (this.GravityMult != 1) writer.WriteAttributeString("gravitymult", this.GravityMult.ToString());
-            if (this.PushMultX != 1) writer.WriteAttributeString("pushmultX", this.PushMultX.ToString());
-            if (this.PushMultY != 1) writer.WriteAttributeString("pushmultY", this.PushMultY.ToString());
-            if (this.PushConstX != 0) writer.WriteAttributeString("pushconstX", this.PushConstX.ToString());
-            if (this.PushConstY != 0) writer.WriteAttributeString("pushconstY", this.PushConstY.ToString());
-            if (this.ResistMultX != 1) writer.WriteAttributeString("resistmultX", this.ResistMultX.ToString());
-            if (this.ResistMultY != 1) writer.WriteAttributeString("resistmultY", this.ResistMultY.ToString());
-            if (this.ResistConstX != 0) writer.WriteAttributeString("resistconstX", this.ResistConstX.ToString());
-            if (this.ResistConstY != 0) writer.WriteAttributeString("resistconstY", this.ResistConstY.ToString());
+            if (this.PushX != 0) writer.WriteAttributeString("pushX", this.PushX.ToString());
+            if (this.PushY != 0) writer.WriteAttributeString("pushY", this.PushY.ToString());
+            if (this.ResistX != 1) writer.WriteAttributeString("resistX", this.ResistX.ToString());
+            if (this.ResistY != 1) writer.WriteAttributeString("resistY", this.ResistY.ToString());
+            if (this.DragX != 1) writer.WriteAttributeString("dragX", this.DragX.ToString());
+            if (this.DragY != 1) writer.WriteAttributeString("dragY", this.DragY.ToString());
             writer.WriteEndElement();
         }
     }

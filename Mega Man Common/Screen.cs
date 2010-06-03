@@ -51,6 +51,7 @@ namespace MegaMan
             {
                 string old = name;
                 name = value;
+                this.Dirty = true;
                 if (Renamed != null) Renamed(old, name);
             }
         }
@@ -129,6 +130,8 @@ namespace MegaMan
                 CopyOldTiles(width, height, newTiles);
 
             this.tiles = newTiles;
+
+            this.Dirty = true;
 
             if (Resized != null) Resized(width, height);
         }

@@ -30,6 +30,7 @@ namespace MegaMan
     {
         private int[][] tiles;
         private bool dirty;
+        private string name;
 
         private string musicIntroPath, musicLoopPath;
 
@@ -43,7 +44,16 @@ namespace MegaMan
         public List<TeleportInfo> Teleports { get; private set; }
         
         #region Properties
-        public string Name { get; set; }
+        public string Name
+        {
+            get { return name; }
+            set
+            {
+                string old = name;
+                name = value;
+                if (Renamed != null) Renamed(old, name);
+            }
+        }
         public int Width { get { return tiles[0].Length; } }
         public int Height { get { return tiles.GetLength(0); } }
         public int PixelWidth { get { return tiles[0].Length * Tileset.TileSize; } }
@@ -69,6 +79,7 @@ namespace MegaMan
         #endregion Properties
 
         public event Action<int, int> Resized;
+        public event Action<string, string> Renamed;
 
         public Screen(int width, int height, Map parent)
         {

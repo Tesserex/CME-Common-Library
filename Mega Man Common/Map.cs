@@ -56,7 +56,11 @@ namespace MegaMan
         private Dictionary<string, Point> continuePoints;
         public IDictionary<string, Point> ContinuePoints { get { return continuePoints; } }
 
-        private string name, fileDir, musicIntroPath, musicLoopPath, tilePath;
+        private string name;
+        private string rootPath; // the absolute path to the project folder, my parent
+        private string pathAbs, pathRel;
+        private string musicIntroPath, musicLoopPath;
+        private string tilePath;
 
         #region Properties
         public bool Loaded { get; private set; }
@@ -69,7 +73,28 @@ namespace MegaMan
         public Tileset Tileset { get; private set; }
 
         public string Name { get { return name; } set { name = value; Dirty = true; } }
-        public string FileDir { get { return fileDir; } private set { fileDir = value; Dirty = true; } }
+
+        /// <summary>
+        /// Gets or sets the absolute file path to the directory where this stage is stored
+        /// </summary>
+        public string PathAbsolute
+        {
+            get { return pathAbs; }
+            set {
+                pathAbs = Path.GetFullPath(value); // make sure it's absolute
+                pathRel = PathToRelative(pathAbs, rootPath);
+                Dirty = true;
+            }
+        }
+
+        /// <summary>
+        /// Gets the path to this stage's directory, relative to the root project path.
+        /// </summary>
+        public string PathRelative
+        {
+            get { return pathRel; }
+        }
+
         public string MusicIntroPath { get { return musicIntroPath; } set { musicIntroPath = value; Dirty = true; } }
         public string MusicLoopPath { get { return musicLoopPath; } set { musicLoopPath = value; Dirty = true; } }
         public string TilePath { get { return tilePath; } set { tilePath = value; Dirty = true; } }
@@ -121,6 +146,7 @@ namespace MegaMan
         // </summary>
         public Map(string rootPath, string mapDirectory) : this() 
         {
+            this.rootPath = rootPath;
             LoadMapXml(rootPath, mapDirectory);
         }
 
@@ -130,7 +156,8 @@ namespace MegaMan
         // </summary>
         public Map(string directory) : this() 
         {
-            LoadMapXml(Directory.GetCurrentDirectory(), directory);
+            rootPath = Directory.GetCurrentDirectory();
+            LoadMapXml(rootPath, directory);
         }
 
         // <summary>
@@ -150,13 +177,13 @@ namespace MegaMan
         // </summary>
         public void LoadMapXml(string rootPath, string mapDirectory) 
         {
-            FileDir = System.IO.Path.Combine(rootPath, mapDirectory);
+            PathAbsolute = System.IO.Path.Combine(rootPath, mapDirectory);
 
-            var mapXml = XElement.Load(Path.Combine(FileDir, "map.xml"));
-            Name = Path.GetFileNameWithoutExtension(FileDir);
+            var mapXml = XElement.Load(Path.Combine(PathAbsolute, "map.xml"));
+            Name = Path.GetFileNameWithoutExtension(PathAbsolute);
 
             var relativeTilePath = mapXml.Attribute("tiles").Value;
-            TilePath = Path.Combine(FileDir, relativeTilePath);
+            TilePath = Path.Combine(PathAbsolute, relativeTilePath);
 
             var stageTilePath = Path.Combine(mapDirectory, relativeTilePath);
             Tileset = new Tileset(rootPath, stageTilePath);
@@ -250,7 +277,7 @@ namespace MegaMan
             foreach (XElement screen in mapXml.Elements("Screen"))
             {
                 string id = screen.Attribute("id").Value;
-                Screen s = new Screen(FileDir + "\\" + id + ".scn", this);
+                Screen s = new Screen(PathAbsolute + "\\" + id + ".scn", this);
                 Screens.Add(id, s);
                 if (Screens.Count == 1)
                 {
@@ -347,14 +374,18 @@ namespace MegaMan
             Dirty = true;
         }
 
-        public void Save() { if (FileDir != null) Save(FileDir); }
+        public void Save() { if (PathAbsolute != null) Save(PathAbsolute); }
 
+        /// <summary>
+        /// Saves this stage to the specified directory.
+        /// </summary>
+        /// <param name="directory">An absolute path to the directory to save to.</param>
         public void Save(string directory)
         {
-            FileDir = directory;
-            this.Name = System.IO.Path.GetFileNameWithoutExtension(directory);
+            PathAbsolute = directory;
+            this.Name = Path.GetFileNameWithoutExtension(directory);
 
-            XmlTextWriter writer = new XmlTextWriter(directory + "\\map.xml", null);
+            XmlTextWriter writer = new XmlTextWriter(Path.Combine(PathAbsolute, "map.xml"), null);
             writer.Formatting = Formatting.Indented;
             writer.IndentChar = '\t';
             writer.Indentation = 1;

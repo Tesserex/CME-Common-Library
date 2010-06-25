@@ -26,7 +26,7 @@ namespace MegaMan
         BackwardOnly = 3
     }
 
-    public struct Join {
+    public class Join {
         public JoinType type;
         public string screenOne, screenTwo;
         // <summary>

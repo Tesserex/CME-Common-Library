@@ -16,13 +16,38 @@ namespace MegaMan
 
         public Image Sheet { get; private set; }
 
-        private string absSheetPath;
+        private string sheetPathAbs, sheetPathRel;
 
-        /// <summary>
-        /// SheetPath should be local, not absolute
-        /// </summary>
-        public string SheetPath { get; set; }
-        public string FilePath { get; set; }
+        public string SheetPathAbs
+        {
+            get { return sheetPathAbs; }
+            set
+            {
+                sheetPathAbs = Path.GetFullPath(value);
+                if (!string.IsNullOrEmpty(filePathAbs))
+                {
+                    sheetPathRel = Map.PathToRelative(sheetPathAbs, filePathAbs);
+                }
+            }
+        }
+
+        private string filePathAbs;
+
+        // this is inherently an absolute path.
+        // If you asked "what about relative?",
+        // I would reply, "relative to what?"
+        public string FilePath
+        {
+            get { return filePathAbs; }
+            private set
+            {
+                filePathAbs = Path.GetFullPath(value);
+                if (!string.IsNullOrEmpty(SheetPathAbs))
+                {
+                    sheetPathRel = Map.PathToRelative(SheetPathAbs, filePathAbs);
+                }
+            }
+        }
 
         public int TileSize { get; private set; }
 
@@ -56,24 +81,19 @@ namespace MegaMan
                 throw new Exception("The specified tileset definition file does not contain a Tileset tag.");
 
             string sheetDirectory = Directory.GetParent(FilePath).FullName;
-            SheetPath = reader.Attribute("tilesheet").Value;
-            absSheetPath = Path.Combine(sheetDirectory, SheetPath);
-
-            // if the file has an absolute, it must be made relative in order to be protable between computers
-            if (Path.IsPathRooted(SheetPath))
-            {
-                // the parent directory is the only safe assumption we can make about the path
-                // without locking everyone into a specific game file structure
-                SheetPath = Map.PathToRelative(SheetPath, sheetDirectory);
-            }
+            
+            // this may seem redundant, combining, and then having the property split it
+            // but it protects from the case where the given path was accidentally absolute
+            // this will then set the relative sheet path automatically
+            SheetPathAbs = Path.Combine(sheetDirectory, reader.Attribute("tilesheet").Value);
 
             try 
             {
-                Sheet = Bitmap.FromFile(absSheetPath);
+                Sheet = Bitmap.FromFile(SheetPathAbs);
             } 
             catch (FileNotFoundException err) 
             {
-                throw new Exception("A tile image file was not found at the location specified by the tileset definition: " + SheetPath, err);
+                throw new Exception("A tile image file was not found at the location specified by the tileset definition: " + SheetPathAbs, err);
             }
 
             int size;
@@ -123,7 +143,7 @@ namespace MegaMan
 
         public void SetTextures(Microsoft.Xna.Framework.Graphics.GraphicsDevice device)
         {
-            Microsoft.Xna.Framework.Graphics.Texture2D tex = Microsoft.Xna.Framework.Graphics.Texture2D.FromFile(device, this.absSheetPath);
+            Microsoft.Xna.Framework.Graphics.Texture2D tex = Microsoft.Xna.Framework.Graphics.Texture2D.FromFile(device, this.sheetPathAbs);
             foreach (Tile tile in this)
             {
                 tile.Sprite.SetTexture(tex);
@@ -155,21 +175,21 @@ namespace MegaMan
             this.properties[properties.Name] = properties;
         }
 
-        public void Save()
-        {
-            if (FilePath != null) 
-                Save(FilePath);
-        }
-
         public void Save(string path)
         {
-            XmlTextWriter writer = new XmlTextWriter(path, null);
+            FilePath = path; // this will adjust sheet paths accordingly
+            Save();
+        }
+
+        public void Save()
+        {
+            XmlTextWriter writer = new XmlTextWriter(FilePath, null);
             writer.Formatting = Formatting.Indented;
             writer.Indentation = 1;
             writer.IndentChar = '\t';
 
             writer.WriteStartElement("Tileset");
-            writer.WriteAttributeString("tilesheet", SheetPath);
+            writer.WriteAttributeString("tilesheet", sheetPathRel);
             writer.WriteAttributeString("tilesize", TileSize.ToString());
 
             writer.WriteStartElement("TileProperties");

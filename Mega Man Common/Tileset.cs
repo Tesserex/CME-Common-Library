@@ -40,36 +40,15 @@ namespace MegaMan
             this.properties = new Dictionary<string, TileProperties>();
         }
 
-        // Load the tileset xml along with the tileset images.
-        // rootPath should be absolute. tilesetPath should be relative to rootPath
-        // Ex: rootPath = "C:\MegaMan\MyCoolGame\", tilesetPath = "level1\level1.xml"
-        // Will load: "C:\MegaMan\MyCoolGame\level1\level1.xml" as the full path
-        public Tileset(string rootPath, string tilesetPath) 
-        {
-            LoadTilesetXml(rootPath, tilesetPath);
-        }
-
-        // Use this to specify the tileset path, assuming root path is current directory
+        /// <summary>
+        /// Construct a Tileset by specifying an absolute path to a tileset XML definition file.
+        /// </summary>
+        /// <param name="path"></param>
         public Tileset(string path)
-        {
-            LoadTilesetXml(Directory.GetCurrentDirectory(), path);
-        }
-
-
-        // LoadTilesetXml - Load the tileset xml along with the tileset images.
-        // rootPath should be absolute. 
-        // tilesetPath should be relative to rootPath
-        // 
-        // Ex: 
-        //      rootPath = "C:\MegaMan\MyCoolGame\"
-        //      tilesetPath = "level1\level1.xml"
-        //      
-        // Will load: "C:\MegaMan\MyCoolGame\level1\level1.xml" as the full path
-        private void LoadTilesetXml(string rootPath, string tilesetPath) 
         {
             this.properties = new Dictionary<string, TileProperties>();
 
-            FilePath = Path.Combine(rootPath, tilesetPath);
+            FilePath = path;
 
             var doc = XDocument.Load(FilePath);
             var reader = doc.Element("Tileset");

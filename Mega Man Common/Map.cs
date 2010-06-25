@@ -60,7 +60,7 @@ namespace MegaMan
         private string rootPath; // the absolute path to the project folder, my parent
         private string pathAbs, pathRel;
         private string musicIntroPath, musicLoopPath;
-        private string tilePath;
+        private string tilePathRel, tilePathAbs;
 
         #region Properties
         public bool Loaded { get; private set; }
@@ -97,8 +97,7 @@ namespace MegaMan
 
         public string MusicIntroPath { get { return musicIntroPath; } set { musicIntroPath = value; Dirty = true; } }
         public string MusicLoopPath { get { return musicLoopPath; } set { musicLoopPath = value; Dirty = true; } }
-        public string TilePath { get { return tilePath; } set { tilePath = value; Dirty = true; } }
-
+        
         private bool dirty;
         public bool Dirty
         {
@@ -182,11 +181,10 @@ namespace MegaMan
             var mapXml = XElement.Load(Path.Combine(PathAbsolute, "map.xml"));
             Name = Path.GetFileNameWithoutExtension(PathAbsolute);
 
-            var relativeTilePath = mapXml.Attribute("tiles").Value;
-            TilePath = Path.Combine(PathAbsolute, relativeTilePath);
+            tilePathRel = mapXml.Attribute("tiles").Value;
+            tilePathAbs = Path.Combine(PathAbsolute, tilePathRel);
 
-            var stageTilePath = Path.Combine(mapDirectory, relativeTilePath);
-            Tileset = new Tileset(rootPath, stageTilePath);
+            Tileset = new Tileset(tilePathAbs);
 
             PlayerStartX = 3;
             PlayerStartY = 3;
@@ -358,10 +356,17 @@ namespace MegaMan
             RenameScreen(this.Screens[oldName], newName);
         }
 
-        public void ChangeTileset(string path) 
+        /// <summary>
+        /// Changes the tileset by specifying an absolute path to the new tileset XML file.
+        /// </summary>
+        /// <param name="path">If it's not absolute, I'll make it so.</param>
+        public void ChangeTileset(string path)
         {
+            path = Path.GetFullPath(path);
+            tilePathAbs = path;
+            tilePathRel = Map.PathToRelative(path, PathAbsolute);
             Tileset = new Tileset(path);
-            TilePath = path;
+            
             foreach (Screen s in Screens.Values) s.Tileset = Tileset;
         }
 
@@ -393,8 +398,7 @@ namespace MegaMan
             writer.WriteStartElement("Map");
             writer.WriteAttributeString("name", Name);
 
-            string relpath = PathToRelative(TilePath, directory);
-            writer.WriteAttributeString("tiles", relpath);
+            writer.WriteAttributeString("tiles", tilePathRel);
 
             if (this.MusicIntroPath != null || this.MusicLoopPath != null)
             {

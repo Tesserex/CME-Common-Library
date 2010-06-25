@@ -49,10 +49,8 @@ namespace MegaMan
             get { return name; }
             set
             {
-                string old = name;
                 name = value;
                 this.Dirty = true;
-                if (Renamed != null) Renamed(old, name);
             }
         }
         public int Width { get { return tiles[0].Length; } }
@@ -78,9 +76,6 @@ namespace MegaMan
         }
 
         #endregion Properties
-
-        public event Action<int, int> Resized;
-        public event Action<string, string> Renamed;
 
         public Screen(int width, int height, Map parent)
         {
@@ -132,8 +127,6 @@ namespace MegaMan
             this.tiles = newTiles;
 
             this.Dirty = true;
-
-            if (Resized != null) Resized(width, height);
         }
 
         public void CopyOldTiles(int width, int height, int[][] newTiles) 

@@ -151,7 +151,7 @@ namespace MegaMan
         /// </summary>
         public void AddFrame()
         {
-            frames.Add(new SpriteFrame(this.sheet, 0, DrawRectangle.Empty));
+            frames.Add(new SpriteFrame(this, this.sheet, 0, DrawRectangle.Empty));
             CheckTickable();
         }
 
@@ -164,7 +164,7 @@ namespace MegaMan
         /// <param name="duration">The duration of the frame, in game ticks.</param>
         public void AddFrame(Image tilesheet, int x, int y, int duration)
         {
-            this.frames.Add(new SpriteFrame(tilesheet, duration, new DrawRectangle(x, y, this.Width, this.Height)));
+            this.frames.Add(new SpriteFrame(this, tilesheet, duration, new DrawRectangle(x, y, this.Width, this.Height)));
             CheckTickable();
         }
 
@@ -239,7 +239,7 @@ namespace MegaMan
 
         private bool tickable;
 
-        private void CheckTickable()
+        internal void CheckTickable()
         {
             tickable = false;
             if (frames.Count <= 1) 
@@ -513,7 +513,9 @@ namespace MegaMan
 
     public class SpriteFrame
     {
+        private Sprite sprite;
         private Image cutTile;
+        private int duration;
 
         /// <summary>
         /// Gets or sets the image for this frame.
@@ -525,10 +527,22 @@ namespace MegaMan
         /// <summary>
         /// Gets or sets the number of ticks that this image should be displayed.
         /// </summary>
-        public int Duration { get; set; }
-
-        public SpriteFrame(Image img, int duration, DrawRectangle sheetRect)
+        public int Duration
         {
+            get
+            {
+                return duration;
+            }
+            set
+            {
+                duration = value;
+                sprite.CheckTickable();
+            }
+        }
+
+        internal SpriteFrame(Sprite spr, Image img, int duration, DrawRectangle sheetRect)
+        {
+            this.sprite = spr;
             this.Image = img;
             this.Duration = duration;
             this.SheetLocation = sheetRect;

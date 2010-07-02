@@ -51,8 +51,6 @@ namespace MegaMan
 
         public int TileSize { get; private set; }
 
-        public event Action TileAdded;
-
         // ************
         // Constructors
         // ************
@@ -162,7 +160,6 @@ namespace MegaMan
             Sprite sprite = new Sprite(this.TileSize, this.TileSize);
             sprite.sheet = this.Sheet;
             base.Add(new Tile(this.Count, sprite));
-            if (TileAdded != null) TileAdded();
         }
 
         public TileProperties GetProperties(string name)

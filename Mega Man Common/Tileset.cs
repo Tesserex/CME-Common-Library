@@ -63,6 +63,7 @@ namespace MegaMan
             this.TileSize = tilesize;
             this.Sheet = sheet;
             this.properties = new Dictionary<string, TileProperties>();
+            this.properties["Default"] = TileProperties.Default;
         }
 
         /// <summary>

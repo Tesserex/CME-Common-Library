@@ -206,24 +206,7 @@ namespace MegaMan
                 writer.WriteAttributeString("name", tile.Name);
                 writer.WriteAttributeString("properties", tile.Properties.Name);
 
-                writer.WriteStartElement("Sprite");
-                writer.WriteAttributeString("width", TileSize.ToString());
-                writer.WriteAttributeString("height", TileSize.ToString());
-
-                writer.WriteStartElement("Hotspot");
-                writer.WriteAttributeString("x", "0");
-                writer.WriteAttributeString("y", "0");
-                writer.WriteEndElement();
-
-                foreach (SpriteFrame frame in tile.Sprite)
-                {
-                    writer.WriteStartElement("Frame");
-                    writer.WriteAttributeString("x", frame.SheetLocation.X.ToString());
-                    writer.WriteAttributeString("y", frame.SheetLocation.Y.ToString());
-                    writer.WriteAttributeString("duration", frame.Duration.ToString());
-                    writer.WriteEndElement();
-                }
-                writer.WriteEndElement();   // end Sprite
+                tile.Sprite.WriteTo(writer);
 
                 writer.WriteEndElement();   // end Tile
             }

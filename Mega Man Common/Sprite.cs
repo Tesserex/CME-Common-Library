@@ -456,6 +456,28 @@ namespace MegaMan
             return sprite;
         }
 
+        public void WriteTo(XmlTextWriter writer)
+        {
+            writer.WriteStartElement("Sprite");
+            writer.WriteAttributeString("width", this.Width.ToString());
+            writer.WriteAttributeString("height", this.Height.ToString());
+
+            writer.WriteStartElement("Hotspot");
+            writer.WriteAttributeString("x", this.HotSpot.X.ToString());
+            writer.WriteAttributeString("y", this.HotSpot.Y.ToString());
+            writer.WriteEndElement();
+
+            foreach (SpriteFrame frame in this.frames)
+            {
+                writer.WriteStartElement("Frame");
+                writer.WriteAttributeString("x", frame.SheetLocation.X.ToString());
+                writer.WriteAttributeString("y", frame.SheetLocation.Y.ToString());
+                writer.WriteAttributeString("duration", frame.Duration.ToString());
+                writer.WriteEndElement();
+            }
+            writer.WriteEndElement();   // end Sprite
+        }
+
         #region ICollection<SpriteFrame> Members
 
         public void Add(SpriteFrame item)

@@ -24,6 +24,7 @@ namespace MegaMan
         private List<SpriteFrame> frames;
         private int currentFrame;
         private int lastFrameTime;
+        private FilePath sheetPath;
 
         // XNA stuff
         private Texture2D texture;
@@ -342,63 +343,17 @@ namespace MegaMan
 
         public static readonly Sprite Empty = new Sprite(0, 0);
 
-        public static Sprite FromXml(string path)
-        {
-            XmlTextReader reader = new XmlTextReader(path);
-            if (!reader.ReadToFollowing("Sprite")) return Sprite.Empty; // should alert the user
-
-            string dir = System.IO.Path.GetDirectoryName(path);
-            return FromXml(ref reader, Image.FromFile(System.IO.Path.Combine(dir, reader.GetAttribute("tilesheet"))));
-        }
-
-        public static Sprite FromXml(ref XmlTextReader reader, Image tilesheet)
-        {
-            int width = Int32.Parse(reader.GetAttribute("width"));
-            int height = Int32.Parse(reader.GetAttribute("height"));
-
-            Sprite sprite = new Sprite(width, height);
-            sprite.sheet = tilesheet;
-
-            while (reader.Read() && !(reader.NodeType == XmlNodeType.EndElement && (reader.Name == "Sprite" || reader.Name == "State") ))
-            {
-                switch (reader.Name)
-                {
-                    case "Hotspot":
-                        int hx = Int32.Parse(reader.GetAttribute("x"));
-                        int hy = Int32.Parse(reader.GetAttribute("y"));
-                        sprite.HotSpot = new DrawPoint(hx, hy);
-                        break;
-
-                    case "AnimStyle":
-                        string style = reader.ReadString();
-                        switch (style)
-                        {
-                            case "Bounce": sprite.AnimStyle = AnimationStyle.Bounce; break;
-                            case "PlayOnce": sprite.AnimStyle = AnimationStyle.PlayOnce; break;
-                        }
-                        break;
-
-                    case "Frame":
-                        int duration = Int32.Parse(reader.GetAttribute("duration"));
-                        int x = Int32.Parse(reader.GetAttribute("x"));
-                        int y = Int32.Parse(reader.GetAttribute("y"));
-                        sprite.AddFrame(tilesheet, x, y, duration);
-                        break;
-                }
-            }
-
-            return sprite;
-        }
-
         public static Sprite FromXml(XElement element, string basePath)
         {
             XAttribute tileattr = element.Attribute("tilesheet");
             if (tileattr == null) throw new ArgumentException("Sprite element does not specify a tilesheet!");
             Sprite sprite = null;
 
-            Image tilesheet = Image.FromFile(System.IO.Path.Combine(basePath, tileattr.Value));
+            string sheetPath = System.IO.Path.Combine(basePath, tileattr.Value);
+            Image tilesheet = Image.FromFile(sheetPath);
             sprite = FromXml(element, tilesheet);
-            return sprite; 
+            sprite.sheetPath = FilePath.FromRelative(tileattr.Value, basePath);
+            return sprite;
         }
 
         public static Sprite FromXml(XElement element, Image tilesheet)
@@ -461,6 +416,7 @@ namespace MegaMan
             writer.WriteStartElement("Sprite");
             writer.WriteAttributeString("width", this.Width.ToString());
             writer.WriteAttributeString("height", this.Height.ToString());
+            if (this.sheetPath != null) writer.WriteAttributeString("tilesheet", this.sheetPath.Relative);
 
             writer.WriteStartElement("Hotspot");
             writer.WriteAttributeString("x", this.HotSpot.X.ToString());

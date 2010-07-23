@@ -62,7 +62,6 @@ namespace MegaMan
         private FilePath tilePath;
 
         #region Properties
-        public bool Loaded { get; private set; }
         public Dictionary<string, Screen> Screens { get; private set; }
         public List<Join> Joins { get; private set; }
         public string StartScreen { get; set; }
@@ -199,7 +198,6 @@ namespace MegaMan
                 Joins.Add(j);
             }
 
-            Loaded = true;
             Dirty = false;
         }
 
@@ -324,7 +322,6 @@ namespace MegaMan
             Screens.Clear();
             Joins.Clear();
             Tileset = null;
-            Loaded = false;
             Dirty = true;
         }
 

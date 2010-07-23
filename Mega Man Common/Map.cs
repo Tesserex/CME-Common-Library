@@ -57,10 +57,9 @@ namespace MegaMan
         public IDictionary<string, Point> ContinuePoints { get { return continuePoints; } }
 
         private string name;
-        private string rootPath; // the absolute path to the project folder, my parent
-        private string pathAbs, pathRel;
+        private FilePath path;
         private string musicIntroPath, musicLoopPath;
-        private string tilePathRel, tilePathAbs;
+        private FilePath tilePath;
 
         #region Properties
         public bool Loaded { get; private set; }
@@ -77,22 +76,13 @@ namespace MegaMan
         /// <summary>
         /// Gets or sets the absolute file path to the directory where this stage is stored
         /// </summary>
-        public string PathAbsolute
+        public FilePath StagePath
         {
-            get { return pathAbs; }
+            get { return path; }
             set {
-                pathAbs = Path.GetFullPath(value); // make sure it's absolute
-                pathRel = PathToRelative(pathAbs, rootPath);
+                path = value;
                 Dirty = true;
             }
-        }
-
-        /// <summary>
-        /// Gets the path to this stage's directory, relative to the root project path.
-        /// </summary>
-        public string PathRelative
-        {
-            get { return pathRel; }
         }
 
         public string MusicIntroPath { get { return musicIntroPath; } set { musicIntroPath = value; Dirty = true; } }
@@ -130,61 +120,22 @@ namespace MegaMan
             continuePoints = new Dictionary<string, Point>();
         }
 
-        // <summary>
-        // Map - Load the map xml.
-        // 
-        // rootPath should be absolute.
-        // mapDirectory should be relative to rootPath
-        // 
-        // Ex:
-        //     rootPath = "C:\MegaMan\MyCoolGame\"
-        //     
-        //     mapDirectory = "level1\"
-        //     
-        //     Will load: "C:\MegaMan\MyCoolGame\level1\" as the full path
-        // </summary>
-        public Map(string rootPath, string mapDirectory) : this() 
+        public Map(FilePath path) : this() 
         {
-            this.rootPath = rootPath;
-            LoadMapXml(rootPath, mapDirectory);
+            LoadMapXml(path);
         }
 
-        // <summary>
-        // Load the map xml.
-        // Assumed that the current directory is the root directory
-        // </summary>
-        public Map(string directory) : this() 
+        public void LoadMapXml(FilePath path) 
         {
-            rootPath = Directory.GetCurrentDirectory();
-            LoadMapXml(rootPath, directory);
-        }
+            StagePath = path;
 
-        // <summary>
-        // LoadMapXml - Load the map xml. 
-        // 
-        // rootPath should be absolute. 
-        // mapDirectory should be relative to rootPath
-        // 
-        // Ex: 
-        // 
-        //   rootPath = "C:\MegaMan\MyCoolGame\"
-        //   
-        //   mapDirectory = "level1\"
-        //   
-        //   Will load: "C:\MegaMan\MyCoolGame\level1\" as the full path
-        //   
-        // </summary>
-        public void LoadMapXml(string rootPath, string mapDirectory) 
-        {
-            PathAbsolute = System.IO.Path.Combine(rootPath, mapDirectory);
+            var mapXml = XElement.Load(Path.Combine(StagePath.Absolute, "map.xml"));
+            Name = Path.GetFileNameWithoutExtension(StagePath.Absolute);
 
-            var mapXml = XElement.Load(Path.Combine(PathAbsolute, "map.xml"));
-            Name = Path.GetFileNameWithoutExtension(PathAbsolute);
+            string tilePathRel = mapXml.Attribute("tiles").Value;
+            tilePath = FilePath.FromRelative(tilePathRel, StagePath.Absolute);
 
-            tilePathRel = mapXml.Attribute("tiles").Value;
-            tilePathAbs = Path.Combine(PathAbsolute, tilePathRel);
-
-            Tileset = new Tileset(tilePathAbs);
+            Tileset = new Tileset(tilePath.Absolute);
 
             PlayerStartX = 3;
             PlayerStartY = 3;
@@ -275,7 +226,7 @@ namespace MegaMan
             foreach (XElement screen in mapXml.Elements("Screen"))
             {
                 string id = screen.Attribute("id").Value;
-                Screen s = new Screen(PathAbsolute + "\\" + id + ".scn", this);
+                Screen s = new Screen(Path.Combine(StagePath.Absolute, id + ".scn"), this);
                 Screens.Add(id, s);
                 if (Screens.Count == 1)
                 {
@@ -362,10 +313,8 @@ namespace MegaMan
         /// <param name="path">If it's not absolute, I'll make it so.</param>
         public void ChangeTileset(string path)
         {
-            path = Path.GetFullPath(path);
-            tilePathAbs = path;
-            tilePathRel = Map.PathToRelative(path, PathAbsolute);
-            Tileset = new Tileset(path);
+            tilePath = FilePath.FromAbsolute(path, StagePath.Absolute);
+            Tileset = new Tileset(tilePath.Absolute);
             
             foreach (Screen s in Screens.Values) s.Tileset = Tileset;
         }
@@ -379,7 +328,7 @@ namespace MegaMan
             Dirty = true;
         }
 
-        public void Save() { if (PathAbsolute != null) Save(PathAbsolute); }
+        public void Save() { if (StagePath != null) Save(StagePath.Absolute); }
 
         /// <summary>
         /// Saves this stage to the specified directory.
@@ -387,10 +336,10 @@ namespace MegaMan
         /// <param name="directory">An absolute path to the directory to save to.</param>
         public void Save(string directory)
         {
-            PathAbsolute = directory;
+            StagePath = FilePath.FromAbsolute(directory, StagePath.BasePath);
             this.Name = Path.GetFileNameWithoutExtension(directory);
 
-            XmlTextWriter writer = new XmlTextWriter(Path.Combine(PathAbsolute, "map.xml"), null);
+            XmlTextWriter writer = new XmlTextWriter(Path.Combine(StagePath.Absolute, "map.xml"), null);
             writer.Formatting = Formatting.Indented;
             writer.IndentChar = '\t';
             writer.Indentation = 1;
@@ -398,7 +347,7 @@ namespace MegaMan
             writer.WriteStartElement("Map");
             writer.WriteAttributeString("name", Name);
 
-            writer.WriteAttributeString("tiles", tilePathRel);
+            writer.WriteAttributeString("tiles", tilePath.Relative);
 
             if (this.MusicIntroPath != null || this.MusicLoopPath != null)
             {

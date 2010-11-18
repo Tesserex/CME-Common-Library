@@ -85,6 +85,21 @@ namespace MegaMan
 
         public int Layer { get; private set; }
 
+        public FilePath SheetPath
+        {
+            get
+            {
+                return this.sheetPath;
+            }
+            set
+            {
+                this.sheetPath = value;
+                this.sheet = Image.FromFile(this.sheetPath.Absolute);
+            }
+        }
+
+        public Image Sheet { get { return this.sheet; } }
+
         /// <summary>
         /// If this is true, it means the sprite sheet is backwards - it's facing left instead of right,
         /// so we have to flip all drawing of this sprite to match proper orientation rules.

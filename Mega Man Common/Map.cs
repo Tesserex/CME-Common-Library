@@ -58,7 +58,7 @@ namespace MegaMan
 
         private string name;
         private FilePath path;
-        private string musicIntroPath, musicLoopPath;
+        private FilePath musicIntroPath, musicLoopPath;
         private FilePath tilePath;
 
         #region Properties
@@ -84,8 +84,8 @@ namespace MegaMan
             }
         }
 
-        public string MusicIntroPath { get { return musicIntroPath; } set { musicIntroPath = value; Dirty = true; } }
-        public string MusicLoopPath { get { return musicLoopPath; } set { musicLoopPath = value; Dirty = true; } }
+        public FilePath MusicIntroPath { get { return musicIntroPath; } set { musicIntroPath = value; Dirty = true; } }
+        public FilePath MusicLoopPath { get { return musicLoopPath; } set { musicLoopPath = value; Dirty = true; } }
         
         private bool dirty;
         public bool Dirty
@@ -211,8 +211,8 @@ namespace MegaMan
             {
                 var intro = music.Element("Intro");
                 var loop = music.Element("Loop");
-                MusicIntroPath = (intro != null) ? intro.Value : null;
-                MusicLoopPath = (loop != null) ? loop.Value : null;
+                MusicIntroPath = (intro != null) ? FilePath.FromRelative(intro.Value, StagePath.BasePath) : null;
+                MusicLoopPath = (loop != null) ? FilePath.FromRelative(loop.Value, StagePath.BasePath) : null;
             }
         }
 
@@ -349,8 +349,8 @@ namespace MegaMan
             if (this.MusicIntroPath != null || this.MusicLoopPath != null)
             {
                 writer.WriteStartElement("Music");
-                if (MusicIntroPath != null) writer.WriteElementString("Intro", MusicIntroPath);
-                if (MusicLoopPath != null) writer.WriteElementString("Loop", MusicLoopPath);
+                if (MusicIntroPath != null && !string.IsNullOrEmpty(MusicIntroPath.Relative)) writer.WriteElementString("Intro", MusicIntroPath.Relative);
+                if (MusicLoopPath != null && !string.IsNullOrEmpty(MusicLoopPath.Relative)) writer.WriteElementString("Loop", MusicLoopPath.Relative);
                 writer.WriteEndElement();
             }
 

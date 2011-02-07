@@ -86,6 +86,7 @@ namespace MegaMan
 
         public FilePath MusicIntroPath { get { return musicIntroPath; } set { musicIntroPath = value; Dirty = true; } }
         public FilePath MusicLoopPath { get { return musicLoopPath; } set { musicLoopPath = value; Dirty = true; } }
+        public int MusicNsfTrack { get; private set; }
         
         private bool dirty;
         public bool Dirty
@@ -213,6 +214,12 @@ namespace MegaMan
                 var loop = music.Element("Loop");
                 MusicIntroPath = (intro != null) ? FilePath.FromRelative(intro.Value, StagePath.BasePath) : null;
                 MusicLoopPath = (loop != null) ? FilePath.FromRelative(loop.Value, StagePath.BasePath) : null;
+
+                XAttribute nsfAttr = music.Attribute("nsftrack");
+                if (nsfAttr != null)
+                {
+                    MusicNsfTrack = int.Parse(nsfAttr.Value);
+                }
             }
         }
 
@@ -268,8 +275,14 @@ namespace MegaMan
                 {
                     XElement intro = screenmusic.Element("Intro");
                     XElement loop = screenmusic.Element("Loop");
-                    s.MusicIntroPath = (intro != null) ? intro.Value : null;
-                    s.MusicLoopPath = (loop != null) ? loop.Value : null;
+                    s.MusicIntroPath = (intro != null) ? FilePath.FromRelative(intro.Value, StagePath.BasePath) : null;
+                    s.MusicLoopPath = (loop != null) ? FilePath.FromRelative(loop.Value, StagePath.BasePath) : null;
+
+                    XAttribute nsfAttr = screenmusic.Attribute("nsftrack");
+                    if (nsfAttr != null)
+                    {
+                        s.MusicNsfTrack = int.Parse(nsfAttr.Value);
+                    }
                 }
 
                 foreach (XElement entity in screen.Elements("Boss"))
@@ -346,9 +359,10 @@ namespace MegaMan
 
             writer.WriteAttributeString("tiles", tilePath.Relative);
 
-            if (this.MusicIntroPath != null || this.MusicLoopPath != null)
+            if (this.MusicIntroPath != null || this.MusicLoopPath != null || this.MusicNsfTrack > 0)
             {
                 writer.WriteStartElement("Music");
+                if (MusicNsfTrack > 0) writer.WriteAttributeString("nsftrack", MusicNsfTrack.ToString());
                 if (MusicIntroPath != null && !string.IsNullOrEmpty(MusicIntroPath.Relative)) writer.WriteElementString("Intro", MusicIntroPath.Relative);
                 if (MusicLoopPath != null && !string.IsNullOrEmpty(MusicLoopPath.Relative)) writer.WriteElementString("Loop", MusicLoopPath.Relative);
                 writer.WriteEndElement();
@@ -373,6 +387,15 @@ namespace MegaMan
             {
                 writer.WriteStartElement("Screen");
                 writer.WriteAttributeString("id", id);
+
+                if (Screens[id].MusicIntroPath != null || Screens[id].MusicLoopPath != null || Screens[id].MusicNsfTrack > 0)
+                {
+                    writer.WriteStartElement("Music");
+                    if (Screens[id].MusicNsfTrack > 0) writer.WriteAttributeString("nsftrack", Screens[id].MusicNsfTrack.ToString());
+                    if (Screens[id].MusicIntroPath != null && !string.IsNullOrEmpty(Screens[id].MusicIntroPath.Relative)) writer.WriteElementString("Intro", Screens[id].MusicIntroPath.Relative);
+                    if (Screens[id].MusicLoopPath != null && !string.IsNullOrEmpty(Screens[id].MusicLoopPath.Relative)) writer.WriteElementString("Loop", Screens[id].MusicLoopPath.Relative);
+                    writer.WriteEndElement();
+                }
 
                 foreach (EnemyCopyInfo info in Screens[id].EnemyInfo)
                 {

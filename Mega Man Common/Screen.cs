@@ -32,10 +32,12 @@ namespace MegaMan
         private bool dirty;
         private string name;
 
-        private string musicIntroPath, musicLoopPath;
+        private FilePath musicIntroPath, musicLoopPath;
+        private int musicNsfTrack;
 
-        public string MusicIntroPath { get { return musicIntroPath; } set { musicIntroPath = value; Dirty = true; } }
-        public string MusicLoopPath { get { return musicLoopPath; } set { musicLoopPath = value; Dirty = true; } }
+        public FilePath MusicIntroPath { get { return musicIntroPath; } set { musicIntroPath = value; Dirty = true; } }
+        public FilePath MusicLoopPath { get { return musicLoopPath; } set { musicLoopPath = value; Dirty = true; } }
+        public int MusicNsfTrack { get { return musicNsfTrack; } set { musicNsfTrack = value; Dirty = true; } }
 
         public Map Map { get; private set; }
 

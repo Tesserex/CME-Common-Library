@@ -28,15 +28,15 @@ namespace MegaMan
 
             XAttribute leftAttr = xmlNode.Attribute("left");
             if (leftAttr == null) throw new Exception("Blocks must specify a numeric left attribute");
-            if (!int.TryParse(leftAttr.Value, out left)) throw new Exception("Blocks left attribute is not a valid number!");
+            if (!leftAttr.Value.TryParse(out left)) throw new Exception("Blocks left attribute is not a valid number!");
 
             XAttribute rightAttr = xmlNode.Attribute("right");
             if (rightAttr == null) throw new Exception("Blocks must specify a numeric right attribute");
-            if (!int.TryParse(rightAttr.Value, out right)) throw new Exception("Blocks right attribute is not a valid number!");
+            if (!rightAttr.Value.TryParse(out right)) throw new Exception("Blocks right attribute is not a valid number!");
 
             XAttribute lenAttr = xmlNode.Attribute("length");
             if (lenAttr == null) throw new Exception("Blocks must specify a numeric length attribute");
-            if (!int.TryParse(lenAttr.Value, out length)) throw new Exception("Blocks length attribute is not a valid number!");
+            if (!lenAttr.Value.TryParse(out length)) throw new Exception("Blocks length attribute is not a valid number!");
 
             XAttribute nameAttr = xmlNode.Attribute("entity");
             if (nameAttr == null) throw new Exception("Blocks must specify an entity attribute.");
@@ -52,19 +52,19 @@ namespace MegaMan
 
                 XAttribute attr = block.Attribute("x");
                 if (attr == null) throw new Exception("Block must specify a numeric x attribute");
-                if (!int.TryParse(attr.Value, out x)) throw new Exception("Blocks x attribute is not a valid number!");
+                if (!attr.Value.TryParse(out x)) throw new Exception("Blocks x attribute is not a valid number!");
 
                 attr = block.Attribute("y");
                 if (attr == null) throw new Exception("Block must specify a numeric y attribute");
-                if (!int.TryParse(attr.Value, out y)) throw new Exception("Blocks y attribute is not a valid number!");
+                if (!attr.Value.TryParse(out y)) throw new Exception("Blocks y attribute is not a valid number!");
 
                 attr = block.Attribute("on");
                 if (attr == null) throw new Exception("Block must specify a numeric on attribute");
-                if (!int.TryParse(attr.Value, out on)) throw new Exception("Blocks on attribute is not a valid number!");
+                if (!attr.Value.TryParse(out on)) throw new Exception("Blocks on attribute is not a valid number!");
 
                 attr = block.Attribute("off");
                 if (attr == null) throw new Exception("Block must specify a numeric off attribute");
-                if (!int.TryParse(attr.Value, out off)) throw new Exception("Blocks off attribute is not a valid number!");
+                if (!attr.Value.TryParse(out off)) throw new Exception("Blocks off attribute is not a valid number!");
 
                 BlockInfo info = new BlockInfo();
                 info.pos = new PointF(x, y);

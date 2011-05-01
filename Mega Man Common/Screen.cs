@@ -100,8 +100,8 @@ namespace MegaMan
 
             string[] lines = File.ReadAllLines(filepath);
             string[] firstline = lines[0].Split(' ');
-            int width = Int32.Parse(firstline[0]);
-            int height = Int32.Parse(firstline[1]);
+            int width = int.Parse(firstline[0]);
+            int height = int.Parse(firstline[1]);
             tiles = new int[height][];
             for (int y = 0; y < height; y++)
             {
@@ -109,7 +109,7 @@ namespace MegaMan
                 string[] line = lines[y + 1].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 for (int x = 0; x < width; x++)
                 {
-                    int id = Int32.Parse(line[x]);
+                    int id = int.Parse(line[x]);
                     tiles[y][x] = id;
                 }
             }

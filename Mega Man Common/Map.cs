@@ -146,16 +146,23 @@ namespace MegaMan
             XElement start = mapXml.Element("Start");
             if (start != null) 
             {
-                StartScreen = start.Attribute("screen").Value;
-                PlayerStartX = Int32.Parse(start.Attribute("x").Value);
-                PlayerStartY = Int32.Parse(start.Attribute("y").Value);
+                int px, py;
+                var screenAttr = start.Attribute("Screen");
+                if (screenAttr == null) throw new Exception("Start tag must have a screen attribute!");
+                StartScreen = screenAttr.Value;
+                if (!start.Attribute("x").Value.TryParse(out px)) throw new Exception("Start tag x is not a valid integer!");
+                PlayerStartX = px;
+                if (!start.Attribute("y").Value.TryParse(out py)) throw new Exception("Start tag y is not a valid integer!");
+                PlayerStartY = py;
             }
 
             foreach (XElement contPoint in mapXml.Elements("Continue")) 
             {
                 string screen = contPoint.Attribute("screen").Value;
-                int x = int.Parse(contPoint.Attribute("x").Value);
-                int y = int.Parse(contPoint.Attribute("y").Value);
+                int x;
+                contPoint.Attribute("x").Value.TryParse(out x);
+                int y;
+                contPoint.Attribute("y").Value.TryParse(out y);
                 continuePoints.Add(screen, new Point(x, y));
             }
 
@@ -169,9 +176,12 @@ namespace MegaMan
 
                 string s1 = join.Attribute("s1").Value;
                 string s2 = join.Attribute("s2").Value;
-                int offset1 = Int32.Parse(join.Attribute("offset1").Value);
-                int offset2 = Int32.Parse(join.Attribute("offset2").Value);
-                int size = Int32.Parse(join.Attribute("size").Value);
+                int offset1;
+                join.Attribute("offset1").Value.TryParse(out offset1);
+                int offset2;
+                join.Attribute("offset2").Value.TryParse(out offset2);
+                int size;
+                join.Attribute("size").Value.TryParse(out size);
 
                 JoinDirection direction;
                 XAttribute dirAttr = join.Attribute("direction");
@@ -218,7 +228,9 @@ namespace MegaMan
                 XAttribute nsfAttr = music.Attribute("nsftrack");
                 if (nsfAttr != null)
                 {
-                    MusicNsfTrack = int.Parse(nsfAttr.Value);
+                    int track;
+                    if (!nsfAttr.Value.TryParse(out track)) throw new Exception("NSF track number is not a valid integer!");
+                    MusicNsfTrack = track;
                 }
             }
         }
@@ -239,17 +251,7 @@ namespace MegaMan
                 }
                 foreach (XElement entity in screen.Elements("Entity"))
                 {
-                    string enemyname = entity.Attribute("name").Value;
-                    string state = "Start";
-                    XAttribute stateAttr = entity.Attribute("state");
-                    if (stateAttr != null) state = stateAttr.Value;
-                    int enemyX = Int32.Parse(entity.Attribute("x").Value);
-                    int enemyY = Int32.Parse(entity.Attribute("y").Value);
-                    EnemyCopyInfo info = new EnemyCopyInfo();
-                    info.enemy = enemyname;
-                    info.state = state;
-                    info.screenX = enemyX;
-                    info.screenY = enemyY;
+                    EnemyCopyInfo info = ParseEntity(entity);
                     info.boss = false;
                     XAttribute palAttr = entity.Attribute("pallete");
                     if (palAttr != null) info.pallete = palAttr.Value;
@@ -259,8 +261,13 @@ namespace MegaMan
                 foreach (XElement teleport in screen.Elements("Teleport"))
                 {
                     TeleportInfo info;
-                    info.From = new Point(int.Parse(teleport.Attribute("from_x").Value), int.Parse(teleport.Attribute("from_y").Value));
-                    info.To = new Point(int.Parse(teleport.Attribute("to_x").Value), int.Parse(teleport.Attribute("to_y").Value));
+                    int from_x, from_y, to_x, to_y;
+                    teleport.Attribute("from_x").Value.TryParse(out from_x);
+                    teleport.Attribute("from_y").Value.TryParse(out from_y);
+                    teleport.Attribute("to_x").Value.TryParse(out to_x);
+                    teleport.Attribute("to_y").Value.TryParse(out to_y);
+                    info.From = new Point(from_x, from_y);
+                    info.To = new Point(to_x, to_y);
                     info.TargetScreen = teleport.Attribute("to_screen").Value;
                     s.AddTeleport(info);
                 }
@@ -281,29 +288,44 @@ namespace MegaMan
                     XAttribute nsfAttr = screenmusic.Attribute("nsftrack");
                     if (nsfAttr != null)
                     {
-                        s.MusicNsfTrack = int.Parse(nsfAttr.Value);
+                        int track;
+                        nsfAttr.Value.TryParse(out track);
+                        s.MusicNsfTrack = track;
                     }
                 }
 
                 foreach (XElement entity in screen.Elements("Boss"))
                 {
-                    string enemyname = entity.Attribute("name").Value;
-                    string state = "Start";
-                    XAttribute stateAttr = entity.Attribute("state");
-                    if (stateAttr != null) state = stateAttr.Value;
-                    int enemyX = Int32.Parse(entity.Attribute("x").Value);
-                    int enemyY = Int32.Parse(entity.Attribute("y").Value);
-                    EnemyCopyInfo info = new EnemyCopyInfo();
-                    info.enemy = enemyname;
-                    info.state = state;
-                    info.screenX = enemyX;
-                    info.screenY = enemyY;
+                    EnemyCopyInfo info = ParseEntity(entity);
                     info.boss = true;
                     s.AddEnemy(info);
                 }
 
                 s.Dirty = false;
             }
+        }
+
+        private EnemyCopyInfo ParseEntity(XElement entity)
+        {
+            var nameAttr = entity.Attribute("name");
+            if (nameAttr == null) throw new Exception("Entity tag must have a name attribute!");
+            string enemyname = nameAttr.Value;
+
+            string state = "Start";
+            XAttribute stateAttr = entity.Attribute("state");
+            if (stateAttr != null) state = stateAttr.Value;
+
+            int enemyX;
+            entity.Attribute("x").Value.TryParse(out enemyX);
+            int enemyY;
+            entity.Attribute("y").Value.TryParse(out enemyY);
+            EnemyCopyInfo info = new EnemyCopyInfo();
+            info.enemy = enemyname;
+            info.state = state;
+            info.screenX = enemyX;
+            info.screenY = enemyY;
+
+            return info;
         }
 
         public void RenameScreen(Screen screen, string name)

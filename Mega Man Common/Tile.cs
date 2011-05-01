@@ -63,37 +63,37 @@ namespace MegaMan
                         break;
 
                     case "pushX":
-                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property pushX attribute was not a valid number.");
+                        if (!attr.Value.TryParse(out f)) throw new Exception("Tile property pushX attribute was not a valid number.");
                         PushX = f;
                         break;
 
                     case "pushY":
-                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property pushY attribute was not a valid number.");
+                        if (!attr.Value.TryParse(out f)) throw new Exception("Tile property pushY attribute was not a valid number.");
                         PushY = f;
                         break;
 
                     case "resistX":
-                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property resistX attribute was not a valid number.");
+                        if (!attr.Value.TryParse(out f)) throw new Exception("Tile property resistX attribute was not a valid number.");
                         ResistX = f;
                         break;
 
                     case "resistY":
-                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property resistY attribute was not a valid number.");
+                        if (!attr.Value.TryParse(out f)) throw new Exception("Tile property resistY attribute was not a valid number.");
                         ResistY = f;
                         break;
 
                     case "dragX":
-                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property dragX attribute was not a valid number.");
+                        if (!attr.Value.TryParse(out f)) throw new Exception("Tile property dragX attribute was not a valid number.");
                         DragX = f;
                         break;
 
                     case "dragY":
-                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property dragY attribute was not a valid number.");
+                        if (!attr.Value.TryParse(out f)) throw new Exception("Tile property dragY attribute was not a valid number.");
                         DragY = f;
                         break;
 
                     case "gravitymult":
-                        if (!float.TryParse(attr.Value, out f)) throw new Exception("Tile property gravitymult attribute was not a valid number.");
+                        if (!attr.Value.TryParse(out f)) throw new Exception("Tile property gravitymult attribute was not a valid number.");
                         GravityMult = f;
                         break;
                 }

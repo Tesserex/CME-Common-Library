@@ -142,7 +142,8 @@ namespace MegaMan
 
         public void SetTextures(Microsoft.Xna.Framework.Graphics.GraphicsDevice device)
         {
-            Microsoft.Xna.Framework.Graphics.Texture2D tex = Microsoft.Xna.Framework.Graphics.Texture2D.FromFile(device, this.sheetPathAbs);
+			StreamReader sr = new StreamReader(this.sheetPathAbs);
+			Microsoft.Xna.Framework.Graphics.Texture2D tex = Microsoft.Xna.Framework.Graphics.Texture2D.FromStream(device, sr.BaseStream);
             foreach (Tile tile in this)
             {
                 tile.Sprite.SetTexture(tex);

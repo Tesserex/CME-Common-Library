@@ -153,7 +153,7 @@ namespace MegaMan
                 Sprite.Draw(g, (int)posX, (int)posY, transform);
         }
 
-        public void Draw(Microsoft.Xna.Framework.Graphics.SpriteBatch batch, Microsoft.Xna.Framework.Graphics.Color color, float posX, float posY)
+        public void Draw(Microsoft.Xna.Framework.Graphics.SpriteBatch batch, Microsoft.Xna.Framework.Color color, float posX, float posY)
         {
             if (Sprite != null) 
                 Sprite.DrawXna(batch, color, (int)posX, (int)posY);

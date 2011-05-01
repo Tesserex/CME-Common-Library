@@ -5,7 +5,7 @@ using System.Text;
 using System.Drawing;
 using System.IO;
 using Microsoft.Xna.Framework.Graphics;
-using XnaColor = Microsoft.Xna.Framework.Graphics.Color;
+using XnaColor = Microsoft.Xna.Framework.Color;
 
 namespace MegaMan
 {

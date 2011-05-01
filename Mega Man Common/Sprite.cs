@@ -12,7 +12,7 @@ using DrawPoint     = System.Drawing.Point;
 using DrawRectangle = System.Drawing.Rectangle;
 
 using XnaRectangle  = Microsoft.Xna.Framework.Rectangle;
-using XnaColor      = Microsoft.Xna.Framework.Graphics.Color;
+using XnaColor      = Microsoft.Xna.Framework.Color;
 
 namespace MegaMan
 {
@@ -149,7 +149,8 @@ namespace MegaMan
 
         public void SetTexture(GraphicsDevice device, string sheet)
         {
-            texture = Texture2D.FromFile(device, sheet);
+			StreamReader sr = new StreamReader(sheet);
+			texture = Microsoft.Xna.Framework.Graphics.Texture2D.FromStream(device, sr.BaseStream);
         }
 
         public void SetTexture(Texture2D texture)

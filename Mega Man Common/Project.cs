@@ -5,6 +5,7 @@ using System.Text;
 using System.Drawing;
 using System.IO;
 using System.Xml.Linq;
+using System.Xml;
 
 namespace MegaMan
 {
@@ -33,6 +34,11 @@ namespace MegaMan
         public IEnumerable<StageInfo> Stages
         {
             get { return stages; }
+        }
+
+        public void AddStage(StageInfo stage)
+        {
+            this.stages.Add(stage);
         }
 
         public IEnumerable<BossInfo> Bosses
@@ -157,7 +163,7 @@ namespace MegaMan
             }
         }
 
-        private void Load(string path)
+        public void Load(string path)
         {
             if (!File.Exists(path)) throw new FileNotFoundException("The project file does not exist: " + path);
 
@@ -274,6 +280,85 @@ namespace MegaMan
             {
                 if (!string.IsNullOrEmpty(entityNode.Value.Trim())) includeFiles.Add(entityNode.Value);
             }
+        }
+
+        public void Save()
+        {
+            if (string.IsNullOrEmpty(this.GameFile)) return;
+
+            XmlTextWriter writer = new XmlTextWriter(this.GameFile, Encoding.Default);
+            writer.Formatting = Formatting.Indented;
+            writer.Indentation = 1;
+            writer.IndentChar = '\t';
+
+            writer.WriteStartElement("Game");
+            if (!string.IsNullOrEmpty(this.Name)) writer.WriteAttributeString("name", this.Name);
+            if (!string.IsNullOrEmpty(this.Author)) writer.WriteAttributeString("author", this.Author);
+            writer.WriteAttributeString("version", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
+
+            writer.WriteStartElement("Size");
+            writer.WriteAttributeString("x", this.ScreenWidth.ToString());
+            writer.WriteAttributeString("y", this.ScreenHeight.ToString());
+            writer.WriteEndElement();
+
+            writer.WriteStartElement("Stages");
+            foreach (var info in stages)
+            {
+                writer.WriteStartElement("Stage");
+                writer.WriteAttributeString("name", info.Name);
+                writer.WriteAttributeString("path", info.StagePath.Relative);
+                writer.WriteEndElement();
+            }
+            writer.WriteEndElement(); // Stages
+
+            writer.WriteStartElement("StageSelect");
+
+            writer.WriteStartElement("Music");
+            if (this.StageSelectIntro != null) writer.WriteElementString("Intro", this.StageSelectIntro.Relative);
+            if (this.StageSelectLoop != null) writer.WriteElementString("Loop", this.StageSelectLoop.Relative);
+            writer.WriteEndElement();
+
+            if (this.StageSelectChangeSound != null)
+            {
+                writer.WriteStartElement("ChangeSound");
+                writer.WriteAttributeString("path", this.StageSelectChangeSound.Relative);
+                writer.WriteEndElement(); // ChangeSound
+            }
+            if (this.StageSelectBackground != null) writer.WriteElementString("Background", this.StageSelectBackground.Relative);
+
+            if (this.BossFrameSprite != null)
+            {
+                writer.WriteStartElement("BossFrame");
+                this.BossFrameSprite.WriteTo(writer);
+                writer.WriteEndElement(); // BossFrame
+            }
+
+            writer.WriteStartElement("Spacing");
+            writer.WriteAttributeString("x", this.BossSpacingHorizontal.ToString());
+            writer.WriteAttributeString("y", this.BossSpacingVertical.ToString());
+            writer.WriteAttributeString("offset", this.BossOffset.ToString());
+            writer.WriteEndElement();
+
+            foreach (BossInfo boss in this.bosses)
+            {
+                writer.WriteStartElement("Boss");
+                if (boss.Slot >= 0) writer.WriteAttributeString("slot", boss.Slot.ToString());
+                if (!string.IsNullOrEmpty(boss.Name)) writer.WriteAttributeString("name", boss.Name);
+                if (boss.PortraitPath != null && !string.IsNullOrEmpty(boss.PortraitPath.Relative)) writer.WriteAttributeString("portrait", boss.PortraitPath.Relative);
+                if (!string.IsNullOrEmpty(boss.Stage)) writer.WriteAttributeString("stage", boss.Stage);
+                writer.WriteEndElement();
+            }
+
+            writer.WriteEndElement(); // StageSelect
+
+            foreach (string entityFile in this.includeFiles)
+            {
+                writer.WriteElementString("Include", entityFile);
+            }
+
+            writer.WriteEndElement(); // Game
+
+            writer.Close();
         }
     }
 }

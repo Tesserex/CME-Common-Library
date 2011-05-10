@@ -147,7 +147,7 @@ namespace MegaMan
             if (start != null) 
             {
                 int px, py;
-                var screenAttr = start.Attribute("Screen");
+                var screenAttr = start.Attribute("screen");
                 if (screenAttr == null) throw new Exception("Start tag must have a screen attribute!");
                 StartScreen = screenAttr.Value;
                 if (!start.Attribute("x").Value.TryParse(out px)) throw new Exception("Start tag x is not a valid integer!");

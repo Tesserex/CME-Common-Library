@@ -3,16 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using System.Xml;
 
 namespace MegaMan
 {
-    public enum SoundType : byte
-    {
-        Wav,
-        NSF,
-        Unknown
-    }
-
     public class SoundInfo
     {
         public string Name { get; private set; }
@@ -21,7 +15,7 @@ namespace MegaMan
         public bool Loop { get; private set; }
         public float Volume { get; private set; }
         public byte Priority { get; private set; }
-        public SoundType Type { get; private set; }
+        public AudioType Type { get; private set; }
 
         public static SoundInfo FromXml(XElement soundNode, string basePath)
         {
@@ -40,12 +34,12 @@ namespace MegaMan
             XAttribute trackAttr = soundNode.Attribute("track");
             if (pathattr != null)
             {
-                sound.Type = SoundType.Wav;
+                sound.Type = AudioType.Wav;
                 sound.Path = FilePath.FromRelative(pathattr.Value, basePath);
             }
             else if (trackAttr != null)
             {
-                sound.Type = SoundType.NSF;
+                sound.Type = AudioType.NSF;
 
                 int track;
                 if (!trackAttr.Value.TryParse(out track) || track <= 0) throw new GameXmlException(trackAttr, "Sound track attribute must be an integer greater than zero.");
@@ -57,10 +51,32 @@ namespace MegaMan
             }
             else
             {
-                sound.Type = SoundType.Unknown;
+                sound.Type = AudioType.Unknown;
             }
 
             return sound;
+        }
+
+        public void Save(XmlTextWriter writer)
+        {
+            if (this.Type == AudioType.Unknown) return;
+
+            writer.WriteStartElement("Sound");
+            writer.WriteAttributeString("name", Name);
+
+            if (this.Type == AudioType.Wav)
+            {
+                writer.WriteAttributeString("path", Path.Relative);
+            }
+            else
+            {
+                writer.WriteAttributeString("nsfTrack", NsfTrack.ToString());
+            }
+
+            writer.WriteAttributeString("priority", Priority.ToString());
+            if (Loop) writer.WriteAttributeString("loop", Loop.ToString());
+            if (Volume < 1) writer.WriteAttributeString("volume", Volume.ToString());
+            writer.WriteEndElement();
         }
     }
 }

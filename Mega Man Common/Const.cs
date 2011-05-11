@@ -29,4 +29,11 @@ namespace MegaMan
             return double.TryParse(s, NumberStyles.Float, Const.NumberFormat, out result);
         }
     }
+
+    public enum AudioType : byte
+    {
+        Wav,
+        NSF,
+        Unknown
+    }
 }

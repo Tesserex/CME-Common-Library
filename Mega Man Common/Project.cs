@@ -83,6 +83,9 @@ namespace MegaMan
             set;
         }
 
+        public FilePath MusicNSF { get; set; }
+        public FilePath EffectsNSF { get; set; }
+
         public FilePath StageSelectIntro
         {
             get;
@@ -193,6 +196,9 @@ namespace MegaMan
                 }
                 else ScreenHeight = 0;
             }
+
+            XElement nsfNode = reader.Element("NSF");
+            if (nsfNode != null) LoadNSFInfo(nsfNode);
 
             XElement stagesNode = reader.Element("Stages");
             if (stagesNode != null)
@@ -359,6 +365,21 @@ namespace MegaMan
             writer.WriteEndElement(); // Game
 
             writer.Close();
+        }
+
+        private void LoadNSFInfo(XElement nsfNode)
+        {
+            XElement musicNode = nsfNode.Element("Music");
+            if (musicNode != null)
+            {
+                MusicNSF = FilePath.FromRelative(musicNode.Value, this.BaseDir);
+            }
+
+            XElement sfxNode = nsfNode.Element("SFX");
+            if (sfxNode != null)
+            {
+                EffectsNSF = FilePath.FromRelative(sfxNode.Value, this.BaseDir);
+            }
         }
     }
 }

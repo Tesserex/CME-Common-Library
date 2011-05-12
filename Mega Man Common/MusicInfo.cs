@@ -22,7 +22,7 @@ namespace MegaMan
             var introNode = musicNode.Element("Intro");
             var loopNode = musicNode.Element("Loop");
 
-            XAttribute trackAttr = musicNode.Attribute("track");
+            XAttribute trackAttr = musicNode.Attribute("nsftrack");
 
             if (introNode != null || loopNode != null)
             {
@@ -58,7 +58,7 @@ namespace MegaMan
             }
             else
             {
-                writer.WriteAttributeString("track", this.NsfTrack.ToString());
+                writer.WriteAttributeString("nsftrack", this.NsfTrack.ToString());
             }
             writer.WriteEndElement();
         }

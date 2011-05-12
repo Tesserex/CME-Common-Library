@@ -69,25 +69,7 @@ namespace MegaMan
 
         public StageSelect StageSelect { get; set; }
 
-        public FilePath PauseScreenBackground
-        {
-            get;
-            set;
-        }
-
-        public SoundInfo PauseChangeSound
-        {
-            get;
-            set;
-        }
-
-        public SoundInfo PauseSound
-        {
-            get;
-            set;
-        }
-
-        public Point PauseLivesPosition { get; set; }
+        public PauseScreen PauseScreen { get; set; }
 
         #endregion
 
@@ -151,8 +133,13 @@ namespace MegaMan
             }
 
             XElement pauseNode = reader.Element("PauseScreen");
+            if (pauseNode != null) PauseScreen = new PauseScreen(pauseNode, this.BaseDir);
 
             foreach (XElement entityNode in reader.Elements("Entities"))
+            {
+                if (!string.IsNullOrEmpty(entityNode.Value.Trim())) includeFiles.Add(entityNode.Value);
+            }
+            foreach (XElement entityNode in reader.Elements("Include"))
             {
                 if (!string.IsNullOrEmpty(entityNode.Value.Trim())) includeFiles.Add(entityNode.Value);
             }

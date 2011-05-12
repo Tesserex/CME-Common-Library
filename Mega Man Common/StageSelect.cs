@@ -17,7 +17,7 @@ namespace MegaMan
 
     public class StageSelect
     {
-        private List<BossInfo> bosses = new List<BossInfo>(8);
+        private List<BossInfo> bosses = new List<BossInfo>();
 
         public IEnumerable<BossInfo> Bosses
         {
@@ -43,13 +43,6 @@ namespace MegaMan
             BossSpacingHorizontal = 24;
             BossSpacingVertical = 16;
 
-            for (int i = 0; i < 8; i++)
-            {
-                var boss = new BossInfo();
-                boss.Slot = -1;
-                bosses.Add(boss);
-            }
-
             XElement frameNode = stageSelectNode.Element("BossFrame");
             if (frameNode != null)
             {
@@ -72,21 +65,20 @@ namespace MegaMan
                 this.ChangeSound = SoundInfo.FromXml(soundNode, baseDir);
             }
 
-            int bossIndex = 0;
             foreach (XElement bossNode in stageSelectNode.Elements("Boss"))
             {
                 XAttribute slotAttr = bossNode.Attribute("slot");
                 int slot = -1;
                 if (slotAttr != null) int.TryParse(slotAttr.Value, out slot);
 
-                BossInfo info = this.bosses[bossIndex];
+                BossInfo info = new BossInfo();
                 info.Slot = slot;
                 var bossNameAttr = bossNode.Attribute("name");
                 if (bossNameAttr != null) info.Name = bossNameAttr.Value;
                 var portrait = bossNode.Attribute("portrait");
                 if (portrait != null) info.PortraitPath = FilePath.FromRelative(portrait.Value, baseDir);
                 info.Stage = bossNode.RequireAttribute("stage").Value;
-                bossIndex++;
+                bosses.Add(info);
             }
 
             XElement spacingNode = stageSelectNode.Element("Spacing");

@@ -70,7 +70,7 @@ namespace MegaMan
             }
             else
             {
-                writer.WriteAttributeString("nsfTrack", NsfTrack.ToString());
+                writer.WriteAttributeString("track", NsfTrack.ToString());
             }
 
             writer.WriteAttributeString("priority", Priority.ToString());

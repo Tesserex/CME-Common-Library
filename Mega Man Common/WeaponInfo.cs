@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Xml.Linq;
+using System.Xml;
 
 namespace MegaMan
 {
@@ -34,6 +35,22 @@ namespace MegaMan
             }
 
             return info;
+        }
+
+        public void Save(XmlTextWriter writer)
+        {
+            writer.WriteStartElement("Weapon");
+
+            writer.WriteAttributeString("name", Name);
+            writer.WriteAttributeString("entity", Entity);
+            writer.WriteAttributeString("on", IconOn.Relative);
+            writer.WriteAttributeString("off", IconOff.Relative);
+            writer.WriteAttributeString("x", Location.X.ToString());
+            writer.WriteAttributeString("y", Location.Y.ToString());
+
+            if (Meter != null) Meter.Save(writer);
+
+            writer.WriteEndElement();
         }
     }
 }

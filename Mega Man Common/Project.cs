@@ -164,6 +164,14 @@ namespace MegaMan
             writer.WriteAttributeString("y", this.ScreenHeight.ToString());
             writer.WriteEndElement();
 
+            if (MusicNSF != null || EffectsNSF != null)
+            {
+                writer.WriteStartElement("NSF");
+                if (MusicNSF != null) writer.WriteElementString("Music", MusicNSF.Relative);
+                if (EffectsNSF != null) writer.WriteElementString("SFX", EffectsNSF.Relative);
+                writer.WriteEndElement();
+            }
+
             writer.WriteStartElement("Stages");
             foreach (var info in stages)
             {
@@ -175,6 +183,8 @@ namespace MegaMan
             writer.WriteEndElement(); // Stages
 
             if (this.StageSelect != null) this.StageSelect.Save(writer);
+
+            if (this.PauseScreen != null) this.PauseScreen.Save(writer);
 
             foreach (string entityFile in this.includeFiles)
             {

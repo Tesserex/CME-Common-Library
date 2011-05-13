@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using System.Drawing;
+using System.Xml;
 
 namespace MegaMan
 {
@@ -54,6 +55,27 @@ namespace MegaMan
             if (soundNode != null) meter.Sound = SoundInfo.FromXml(soundNode, basePath);
 
             return meter;
+        }
+
+        public void Save(XmlTextWriter writer)
+        {
+            writer.WriteStartElement("Meter");
+
+            writer.WriteAttributeString("x", this.Position.X.ToString());
+            writer.WriteAttributeString("y", this.Position.Y.ToString());
+
+            writer.WriteAttributeString("image", TickImage.Relative);
+
+            if (Background != null) writer.WriteAttributeString("background", Background.Relative);
+
+            writer.WriteAttributeString("orientation", (Orient == Orientation.Horizontal ? "horizontal" : "vertical"));
+
+            writer.WriteAttributeString("tickX", TickOffset.X.ToString());
+            writer.WriteAttributeString("tickY", TickOffset.Y.ToString());
+
+            if (Sound != null) Sound.Save(writer);
+
+            writer.WriteEndElement();
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Xml.Linq;
+using System.Xml;
 
 namespace MegaMan
 {
@@ -41,6 +42,28 @@ namespace MegaMan
             {
                 LivesPosition = new Point(livesNode.GetInteger("x"), livesNode.GetInteger("y"));
             }
+        }
+
+        public void Save(XmlTextWriter writer)
+        {
+            writer.WriteStartElement("PauseScreen");
+
+            if (ChangeSound != null) ChangeSound.Save(writer);
+            if (PauseSound != null) PauseSound.Save(writer);
+
+            if (Background != null) writer.WriteElementString("Background", Background.Relative);
+
+            foreach (WeaponInfo weapon in weapons) weapon.Save(writer);
+
+            if (LivesPosition != Point.Empty)
+            {
+                writer.WriteStartElement("Lives");
+                writer.WriteAttributeString("x", LivesPosition.X.ToString());
+                writer.WriteAttributeString("y", LivesPosition.Y.ToString());
+                writer.WriteEndElement();
+            }
+
+            writer.WriteEndElement();
         }
     }
 }

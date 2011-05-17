@@ -9,10 +9,10 @@ namespace MegaMan
 {
     public class MusicInfo
     {
-        public FilePath IntroPath { get; private set; }
-        public FilePath LoopPath { get; private set; }
-        public int NsfTrack { get; private set; }
-        public AudioType Type { get; private set; }
+        public FilePath IntroPath { get; set; }
+        public FilePath LoopPath { get; set; }
+        public int NsfTrack { get; set; }
+        public AudioType Type { get; set; }
 
         public static MusicInfo FromXml(XElement musicNode, string basePath)
         {

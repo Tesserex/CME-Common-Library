@@ -24,6 +24,11 @@ namespace MegaMan
             get { return bosses; }
         }
 
+        public void AddBoss(BossInfo boss)
+        {
+            this.bosses.Add(boss);
+        }
+
         public Sprite BossFrame { get; set; }
 
         public FilePath Background { get; set; }

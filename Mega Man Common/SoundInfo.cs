@@ -9,13 +9,13 @@ namespace MegaMan
 {
     public class SoundInfo
     {
-        public string Name { get; private set; }
-        public FilePath Path { get; private set; }
-        public int NsfTrack { get; private set; }
-        public bool Loop { get; private set; }
-        public float Volume { get; private set; }
-        public byte Priority { get; private set; }
-        public AudioType Type { get; private set; }
+        public string Name { get; set; }
+        public FilePath Path { get; set; }
+        public int NsfTrack { get; set; }
+        public bool Loop { get; set; }
+        public float Volume { get; set; }
+        public byte Priority { get; set; }
+        public AudioType Type { get; set; }
 
         public static SoundInfo FromXml(XElement soundNode, string basePath)
         {

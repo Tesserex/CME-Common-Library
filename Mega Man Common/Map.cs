@@ -449,7 +449,7 @@ namespace MegaMan
             writer.Close();
 
             foreach (string i in Screens.Keys) {
-                Screens[i].Save(directory + "\\" + i.ToString() + ".scn");
+                Screens[i].Save(Path.Combine(directory, i + ".scn"));
             }
         }
 

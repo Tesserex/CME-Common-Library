@@ -29,10 +29,14 @@ namespace MegaMan
         {
             weapons = new List<WeaponInfo>();
 
-            ChangeSound = SoundInfo.FromXml(reader.Element("ChangeSound"), basePath);
-            PauseSound = SoundInfo.FromXml(reader.Element("PauseSound"), basePath);
+            XElement changeNode = reader.Element("ChangeSound");
+            if (changeNode != null) ChangeSound = SoundInfo.FromXml(changeNode, basePath);
 
-            Background = FilePath.FromRelative(reader.Element("Background").Value, basePath);
+            XElement soundNode = reader.Element("PauseSound");
+            if (soundNode != null) PauseSound = SoundInfo.FromXml(soundNode, basePath);
+
+            XElement backgroundNode = reader.Element("Background");
+            if (backgroundNode != null) Background = FilePath.FromRelative(backgroundNode.Value, basePath);
 
             foreach (XElement weapon in reader.Elements("Weapon"))
                 weapons.Add(WeaponInfo.FromXml(weapon, basePath));

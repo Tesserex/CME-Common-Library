@@ -56,9 +56,6 @@ namespace MegaMan
         private Dictionary<string, Point> continuePoints;
         public IDictionary<string, Point> ContinuePoints { get { return continuePoints; } }
 
-        private string name;
-        private FilePath path;
-        private FilePath musicIntroPath, musicLoopPath;
         private FilePath tilePath;
 
         #region Properties
@@ -70,48 +67,18 @@ namespace MegaMan
 
         public Tileset Tileset { get; private set; }
 
-        public string Name { get { return name; } set { name = value; Dirty = true; } }
+        public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the absolute file path to the directory where this stage is stored
         /// </summary>
-        public FilePath StagePath
-        {
-            get { return path; }
-            set {
-                path = value;
-                Dirty = true;
-            }
-        }
+        public FilePath StagePath { get; set; }
 
-        public FilePath MusicIntroPath { get { return musicIntroPath; } set { musicIntroPath = value; Dirty = true; } }
-        public FilePath MusicLoopPath { get { return musicLoopPath; } set { musicLoopPath = value; Dirty = true; } }
+        public FilePath MusicIntroPath { get; set; }
+        public FilePath MusicLoopPath { get; set; }
         public int MusicNsfTrack { get; private set; }
         
-        private bool dirty;
-        public bool Dirty
-        {
-            get
-            {
-                if (dirty == true) 
-                    return true;
-
-                foreach (Screen screen in Screens.Values)
-                    if (screen.Dirty) 
-                        return true;
-
-                return false;
-            }
-            set
-            {
-                if (dirty == value) return;
-                dirty = value;
-                if (DirtyChanged != null) DirtyChanged(dirty);
-            }
-        }
         #endregion Properties
-
-        public event Action<bool> DirtyChanged;
 
         public Map() 
         {
@@ -208,8 +175,6 @@ namespace MegaMan
 
                 Joins.Add(j);
             }
-
-            Dirty = false;
         }
 
         /* *
@@ -300,8 +265,6 @@ namespace MegaMan
                     info.boss = true;
                     s.AddEnemy(info);
                 }
-
-                s.Dirty = false;
             }
         }
 
@@ -357,7 +320,6 @@ namespace MegaMan
             Screens.Clear();
             Joins.Clear();
             Tileset = null;
-            Dirty = true;
         }
 
         public void Save() { if (StagePath != null) Save(StagePath.Absolute); }
@@ -489,8 +451,6 @@ namespace MegaMan
             foreach (string i in Screens.Keys) {
                 Screens[i].Save(directory + "\\" + i.ToString() + ".scn");
             }
-
-            Dirty = false;
         }
 
         // this doesn't work for files on different drives

@@ -29,15 +29,10 @@ namespace MegaMan
     public class Screen
     {
         private int[][] tiles;
-        private bool dirty;
-        private string name;
 
-        private FilePath musicIntroPath, musicLoopPath;
-        private int musicNsfTrack;
-
-        public FilePath MusicIntroPath { get { return musicIntroPath; } set { musicIntroPath = value; Dirty = true; } }
-        public FilePath MusicLoopPath { get { return musicLoopPath; } set { musicLoopPath = value; Dirty = true; } }
-        public int MusicNsfTrack { get { return musicNsfTrack; } set { musicNsfTrack = value; Dirty = true; } }
+        public FilePath MusicIntroPath { get; set; }
+        public FilePath MusicLoopPath { get; set; }
+        public int MusicNsfTrack { get; set; }
 
         public Map Map { get; private set; }
 
@@ -46,15 +41,7 @@ namespace MegaMan
         public List<TeleportInfo> Teleports { get; private set; }
         
         #region Properties
-        public string Name
-        {
-            get { return name; }
-            set
-            {
-                name = value;
-                this.Dirty = true;
-            }
-        }
+        public string Name { get; set; }
         public int Width { get { return tiles[0].Length; } }
         public int Height { get { return tiles.GetLength(0); } }
         public int PixelWidth { get { return tiles[0].Length * Tileset.TileSize; } }
@@ -62,20 +49,6 @@ namespace MegaMan
         public Tileset Tileset { get; set; }
 
         public bool IsBossRoom { get; private set; }
-
-        public bool Dirty 
-        { 
-            get 
-            { 
-                return dirty; 
-            } 
-            
-            set 
-            { 
-                dirty = value; 
-                Map.Dirty = value; 
-            } 
-        }
 
         #endregion Properties
 
@@ -127,8 +100,6 @@ namespace MegaMan
                 CopyOldTiles(width, height, newTiles);
 
             this.tiles = newTiles;
-
-            this.Dirty = true;
         }
 
         public void CopyOldTiles(int width, int height, int[][] newTiles) 
@@ -169,19 +140,16 @@ namespace MegaMan
         public void AddEnemy(EnemyCopyInfo enemy)
         {
             EnemyInfo.Add(enemy);
-            Dirty = true;
         }
 
         public void AddBlockPattern(BlockPatternInfo info)
         {
             BlockPatternInfo.Add(info);
-            Dirty = true;
         }
 
         public void AddTeleport(TeleportInfo info)
         {
             Teleports.Add(info);
-            Dirty = true;
         }
 
         public void ChangeTile(int x, int y, int tile)
@@ -193,8 +161,6 @@ namespace MegaMan
                 throw new ArgumentException("Tile is not within tileset range");
 
             tiles[y][x] = tile;
-
-            Dirty = true;
         }
 
         public void Draw(Graphics g, float off_x, float off_y, int width, int height)
@@ -259,7 +225,6 @@ namespace MegaMan
                 }
                 f.Close();
             }
-            Dirty = false;
         }
     }
 }

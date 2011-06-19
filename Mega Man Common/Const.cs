@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Globalization;
-using System.ComponentModel;
+﻿using System.Globalization;
 
 namespace MegaMan
 {
@@ -16,17 +11,17 @@ namespace MegaMan
 
         public static bool TryParse(this string s, out int result)
         {
-            return int.TryParse(s, NumberStyles.Integer, Const.NumberFormat, out result);
+            return int.TryParse(s, NumberStyles.Integer, NumberFormat, out result);
         }
 
         public static bool TryParse(this string s, out float result)
         {
-            return float.TryParse(s, NumberStyles.Float, Const.NumberFormat, out result);
+            return float.TryParse(s, NumberStyles.Float, NumberFormat, out result);
         }
 
         public static bool TryParse(this string s, out double result)
         {
-            return double.TryParse(s, NumberStyles.Float, Const.NumberFormat, out result);
+            return double.TryParse(s, NumberStyles.Float, NumberFormat, out result);
         }
     }
 

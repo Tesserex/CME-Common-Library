@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 using System.Xml;
 
 namespace MegaMan
@@ -19,10 +15,9 @@ namespace MegaMan
 
         public static SoundInfo FromXml(XElement soundNode, string basePath)
         {
-            SoundInfo sound = new SoundInfo();
-            sound.Name = soundNode.RequireAttribute("name").Value;
+            SoundInfo sound = new SoundInfo {Name = soundNode.RequireAttribute("name").Value};
 
-            bool loop = false;
+            bool loop;
             soundNode.TryBool("loop", out loop);
             sound.Loop = loop;
 
@@ -59,12 +54,12 @@ namespace MegaMan
 
         public void Save(XmlTextWriter writer)
         {
-            if (this.Type == AudioType.Unknown) return;
+            if (Type == AudioType.Unknown) return;
 
             writer.WriteStartElement("Sound");
             writer.WriteAttributeString("name", Name);
 
-            if (this.Type == AudioType.Wav)
+            if (Type == AudioType.Wav)
             {
                 writer.WriteAttributeString("path", Path.Relative);
             }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Xml.Linq;
 using System.Xml;
 
@@ -89,19 +86,19 @@ namespace MegaMan
             XElement spacingNode = stageSelectNode.Element("Spacing");
             if (spacingNode != null)
             {
-                int x = BossSpacingHorizontal;
+                int x;
                 if (spacingNode.TryInteger("x", out x))
                 {
                     BossSpacingHorizontal = x;
                 }
 
-                int y = BossSpacingVertical;
+                int y;
                 if (spacingNode.TryInteger("y", out y))
                 {
                     BossSpacingVertical = y;
                 }
 
-                int off = BossOffset;
+                int off;
                 if (spacingNode.TryInteger("offset", out off))
                 {
                     BossOffset = off;

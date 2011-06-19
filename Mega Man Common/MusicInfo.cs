@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 using System.Xml;
 
 namespace MegaMan
@@ -18,7 +14,6 @@ namespace MegaMan
         {
             MusicInfo music = new MusicInfo();
 
-            XAttribute pathattr = musicNode.Attribute("path");
             var introNode = musicNode.Element("Intro");
             var loopNode = musicNode.Element("Loop");
 

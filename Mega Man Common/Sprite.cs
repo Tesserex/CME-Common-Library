@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Xna.Framework;
@@ -149,8 +149,8 @@ namespace MegaMan
 
         public void SetTexture(GraphicsDevice device, string sheet)
         {
-			StreamReader sr = new StreamReader(sheet);
-			texture = Microsoft.Xna.Framework.Graphics.Texture2D.FromStream(device, sr.BaseStream);
+            StreamReader sr = new StreamReader(sheet);
+            texture = Texture2D.FromStream(device, sr.BaseStream);
         }
 
         public void SetTexture(Texture2D texture)
@@ -261,13 +261,9 @@ namespace MegaMan
             tickable = false;
             if (frames.Count <= 1) 
                 return;
-            else foreach (SpriteFrame frame in frames)
+            else if (frames.Any(frame => frame.Duration > 0))
             {
-                if (frame.Duration > 0)
-                {
-                    tickable = true;
-                    break;
-                }
+                tickable = true;
             }
         }
 
@@ -276,8 +272,8 @@ namespace MegaMan
         /// </summary>
         public void Play()
         {
-            this.Playing = true;
-            this.Reset();
+            Playing = true;
+            Reset();
         }
 
         /// <summary>
@@ -363,9 +359,9 @@ namespace MegaMan
         {
             XAttribute tileattr = element.Attribute("tilesheet");
             if (tileattr == null) throw new ArgumentException("Sprite element does not specify a tilesheet!");
-            Sprite sprite = null;
+            Sprite sprite;
 
-            string sheetPath = System.IO.Path.Combine(basePath, tileattr.Value);
+            string sheetPath = Path.Combine(basePath, tileattr.Value);
             Image tilesheet = Image.FromFile(sheetPath);
             sprite = FromXml(element, tilesheet);
             sprite.sheetPath = FilePath.FromRelative(tileattr.Value, basePath);
@@ -374,11 +370,10 @@ namespace MegaMan
 
         public static Sprite FromXml(XElement element, Image tilesheet)
         {
-            int width = Int32.Parse(element.Attribute("width").Value);
-            int height = Int32.Parse(element.Attribute("height").Value);
+            int width = Int32.Parse(element.RequireAttribute("width").Value);
+            int height = Int32.Parse(element.RequireAttribute("height").Value);
 
-            Sprite sprite = new Sprite(width, height);
-            sprite.sheet = tilesheet;
+            Sprite sprite = new Sprite(width, height) {sheet = tilesheet};
 
             XAttribute nameAttr = element.Attribute("name");
             if (nameAttr != null) sprite.Name = nameAttr.Value;
@@ -386,15 +381,15 @@ namespace MegaMan
             XAttribute revAttr = element.Attribute("reversed");
             if (revAttr != null)
             {
-                bool r = false;
+                bool r;
                 if (bool.TryParse(revAttr.Value, out r)) sprite.Reversed = r;
             }
 
             XElement hotspot = element.Element("Hotspot");
             if (hotspot != null)
             {
-                int hx = Int32.Parse(hotspot.Attribute("x").Value);
-                int hy = Int32.Parse(hotspot.Attribute("y").Value);
+                int hx = Int32.Parse(hotspot.RequireAttribute("x").Value);
+                int hy = Int32.Parse(hotspot.RequireAttribute("y").Value);
                 sprite.HotSpot = new DrawPoint(hx, hy);
             }
 
@@ -418,9 +413,9 @@ namespace MegaMan
 
             foreach (XElement frame in element.Elements("Frame"))
             {
-                int duration = Int32.Parse(frame.Attribute("duration").Value);
-                int x = Int32.Parse(frame.Attribute("x").Value);
-                int y = Int32.Parse(frame.Attribute("y").Value);
+                int duration = Int32.Parse(frame.RequireAttribute("duration").Value);
+                int x = frame.GetInteger("x");
+                int y = frame.GetInteger("y");
                 sprite.AddFrame(tilesheet, x, y, duration);
             }
 
@@ -439,7 +434,7 @@ namespace MegaMan
             writer.WriteAttributeString("y", this.HotSpot.Y.ToString());
             writer.WriteEndElement();
 
-            foreach (SpriteFrame frame in this.frames)
+            foreach (SpriteFrame frame in frames)
             {
                 writer.WriteStartElement("Frame");
                 writer.WriteAttributeString("x", frame.SheetLocation.X.ToString());
@@ -454,24 +449,24 @@ namespace MegaMan
 
         public void Add(SpriteFrame item)
         {
-            this.frames.Add(item);
+            frames.Add(item);
             CheckTickable();
         }
 
         public void Clear()
         {
-            this.frames.Clear();
+            frames.Clear();
             tickable = false;
         }
 
         public bool Contains(SpriteFrame item)
         {
-            return this.frames.Contains(item);
+            return frames.Contains(item);
         }
 
         public void CopyTo(SpriteFrame[] array, int arrayIndex)
         {
-            this.frames.CopyTo(array, arrayIndex);
+            frames.CopyTo(array, arrayIndex);
         }
 
         public bool IsReadOnly
@@ -481,7 +476,7 @@ namespace MegaMan
 
         public bool Remove(SpriteFrame item)
         {
-            return this.frames.Remove(item);
+            return frames.Remove(item);
         }
 
         #endregion
@@ -490,7 +485,7 @@ namespace MegaMan
 
         public IEnumerator<SpriteFrame> GetEnumerator()
         {
-            return this.frames.GetEnumerator();
+            return frames.GetEnumerator();
         }
 
         #endregion
@@ -499,7 +494,7 @@ namespace MegaMan
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return this.frames.GetEnumerator();
+            return frames.GetEnumerator();
         }
 
         #endregion
@@ -563,26 +558,20 @@ namespace MegaMan
 
         public void Draw(Graphics g, float positionX, float positionY, bool hflip, bool vflip) 
         {
-            Draw(g, positionX, positionY, hflip, vflip, (img) => { return img; });
+            Draw(g, positionX, positionY, hflip, vflip, img => img);
         }
 
         public void Draw(Graphics g, float positionX, float positionY, bool hflip, bool vflip, Func<Image,Image> transform) 
         {
-            int trueX, trueY;
             if (hflip)
             {
                 this.Image.RotateFlip(RotateFlipType.RotateNoneFlipX);
-                trueX = (int)(Image.Width - SheetLocation.Right);
             }
-            else trueX = SheetLocation.Left;
 
             if (vflip) 
             {
                 this.Image.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                trueY = (int)(Image.Height - SheetLocation.Bottom);
             }
-            else 
-                trueY = SheetLocation.Top;
 
             if (this.cutTile == null) 
                 g.FillRectangle(Brushes.Black, positionX, positionY, this.SheetLocation.Width, this.SheetLocation.Height);
@@ -601,7 +590,7 @@ namespace MegaMan
     /// <summary>
     /// Specifies in which direction an animation playback should sweep.
     /// </summary>
-    public enum AnimationDirection : int
+    public enum AnimationDirection
     {
         Forward = 1,
         Backward = 2
@@ -610,7 +599,7 @@ namespace MegaMan
     /// <summary>
     /// Describes how an animation is played.
     /// </summary>
-    public enum AnimationStyle : int
+    public enum AnimationStyle
     {
         /// <summary>
         /// The animation is played until the last frame, and then stops.

@@ -5,7 +5,7 @@ using System.Text;
 using System.Xml.Linq;
 using System.Xml;
 
-namespace MegaMan
+namespace MegaMan.Common
 {
     public class GameXmlException : Exception
     {

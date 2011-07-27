@@ -2,7 +2,7 @@
 using System.Xml.Linq;
 using System.Xml;
 
-namespace MegaMan
+namespace MegaMan.Common
 {
     public class BossInfo
     {

@@ -14,7 +14,7 @@ using DrawRectangle = System.Drawing.Rectangle;
 using XnaRectangle  = Microsoft.Xna.Framework.Rectangle;
 using XnaColor      = Microsoft.Xna.Framework.Color;
 
-namespace MegaMan
+namespace MegaMan.Common
 {
     /// <summary>
     /// Represents a 2D rectangular image sprite, which can be animated.

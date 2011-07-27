@@ -2,7 +2,7 @@
 using System.Text;
 using System.IO;
 
-namespace MegaMan
+namespace MegaMan.Common
 {
     public class FilePath
     {

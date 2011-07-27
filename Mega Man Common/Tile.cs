@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Xml.Linq;
 using System.Xml;
 
-namespace MegaMan
+namespace MegaMan.Common
 {
     public class TileProperties
     {

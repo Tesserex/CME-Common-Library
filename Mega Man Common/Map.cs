@@ -7,7 +7,7 @@ using System.Drawing;
 using System.Xml.Linq;
 using System.IO;
 
-namespace MegaMan
+namespace MegaMan.Common
 {
     public enum JoinType : int {
         Horizontal = 1,

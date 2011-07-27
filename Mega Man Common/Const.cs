@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace MegaMan
+namespace MegaMan.Common
 {
     public static class Const
     {

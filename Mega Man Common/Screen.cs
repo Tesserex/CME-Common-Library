@@ -7,7 +7,7 @@ using System.IO;
 using Microsoft.Xna.Framework.Graphics;
 using XnaColor = Microsoft.Xna.Framework.Color;
 
-namespace MegaMan
+namespace MegaMan.Common
 {
     public struct EnemyCopyInfo
     {

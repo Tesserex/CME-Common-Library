@@ -7,7 +7,7 @@ using System.Xml.Linq;
 using System.IO;
 using System.Xml;
 
-namespace MegaMan
+namespace MegaMan.Common
 {
     public class Tileset : List<Tile>
     {
@@ -142,8 +142,8 @@ namespace MegaMan
 
         public void SetTextures(Microsoft.Xna.Framework.Graphics.GraphicsDevice device)
         {
-			StreamReader sr = new StreamReader(this.sheetPathAbs);
-			Microsoft.Xna.Framework.Graphics.Texture2D tex = Microsoft.Xna.Framework.Graphics.Texture2D.FromStream(device, sr.BaseStream);
+            StreamReader sr = new StreamReader(this.sheetPathAbs);
+            Microsoft.Xna.Framework.Graphics.Texture2D tex = Microsoft.Xna.Framework.Graphics.Texture2D.FromStream(device, sr.BaseStream);
             foreach (Tile tile in this)
             {
                 tile.Sprite.SetTexture(tex);

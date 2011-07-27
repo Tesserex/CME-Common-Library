@@ -5,7 +5,7 @@ using System.Text;
 using System.Drawing;
 using System.Xml.Linq;
 
-namespace MegaMan
+namespace MegaMan.Common
 {
     public class BlockPatternInfo
     {

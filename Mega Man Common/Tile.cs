@@ -21,6 +21,9 @@ namespace MegaMan.Common
         public float DragX { get; set; }
         public float DragY { get; set; }
         public float GravityMult { get; set; }
+        public string OnEnter { get; set; }
+        public string OnLeave { get; set; }
+        public string OnOver { get; set; }
 
         private static TileProperties def = new TileProperties();
         public static TileProperties Default { get { return def; } }
@@ -96,6 +99,18 @@ namespace MegaMan.Common
                         if (!attr.Value.TryParse(out f)) throw new Exception("Tile property gravitymult attribute was not a valid number.");
                         GravityMult = f;
                         break;
+
+                    case "onenter":
+                        this.OnEnter = attr.Value;
+                        break;
+
+                    case "onleave":
+                        this.OnLeave = attr.Value;
+                        break;
+
+                    case "onover":
+                        this.OnOver = attr.Value;
+                        break;
                 }
             }
         }
@@ -114,6 +129,9 @@ namespace MegaMan.Common
             if (this.ResistY != 1) writer.WriteAttributeString("resistY", this.ResistY.ToString());
             if (this.DragX != 1) writer.WriteAttributeString("dragX", this.DragX.ToString());
             if (this.DragY != 1) writer.WriteAttributeString("dragY", this.DragY.ToString());
+            if (this.OnEnter != null) writer.WriteAttributeString("onenter", this.OnEnter);
+            if (this.OnLeave != null) writer.WriteAttributeString("onleave", this.OnLeave);
+            if (this.OnOver != null) writer.WriteAttributeString("onover", this.OnOver);
             writer.WriteEndElement();
         }
     }

@@ -8,20 +8,20 @@ using System.Xml;
 
 namespace MegaMan.Common
 {
-    public class WeaponInfo
+    public class PauseWeaponInfo
     {
         public FilePath IconOn { get; set; }
         public FilePath IconOff { get; set; }
         public string Name { get; set; }
-        public string Entity { get; set; }
+        public string Weapon { get; set; }
         public Point Location { get; set; }
         public MeterInfo Meter { get; set; }
 
-        public static WeaponInfo FromXml(XElement weaponNode, string basePath)
+        public static PauseWeaponInfo FromXml(XElement weaponNode, string basePath)
         {
-            WeaponInfo info = new WeaponInfo();
+            PauseWeaponInfo info = new PauseWeaponInfo();
             info.Name = weaponNode.RequireAttribute("name").Value;
-            info.Entity = weaponNode.RequireAttribute("entity").Value;
+            info.Weapon = weaponNode.RequireAttribute("weapon").Value;
 
             info.IconOn = FilePath.FromRelative(weaponNode.RequireAttribute("on").Value, basePath);
             info.IconOff = FilePath.FromRelative(weaponNode.RequireAttribute("off").Value, basePath);
@@ -42,7 +42,7 @@ namespace MegaMan.Common
             writer.WriteStartElement("Weapon");
 
             writer.WriteAttributeString("name", Name);
-            writer.WriteAttributeString("entity", Entity);
+            writer.WriteAttributeString("weapon", Weapon);
             writer.WriteAttributeString("on", IconOn.Relative);
             writer.WriteAttributeString("off", IconOff.Relative);
             writer.WriteAttributeString("x", Location.X.ToString());

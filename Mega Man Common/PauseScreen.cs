@@ -7,9 +7,9 @@ namespace MegaMan.Common
 {
     public class PauseScreen
     {
-        private List<WeaponInfo> weapons;
+        private List<PauseWeaponInfo> weapons;
 
-        public IEnumerable<WeaponInfo> Weapons
+        public IEnumerable<PauseWeaponInfo> Weapons
         {
             get { return weapons; }
         }
@@ -24,7 +24,7 @@ namespace MegaMan.Common
 
         public PauseScreen(XElement reader, string basePath)
         {
-            weapons = new List<WeaponInfo>();
+            weapons = new List<PauseWeaponInfo>();
 
             XElement changeNode = reader.Element("ChangeSound");
             if (changeNode != null) ChangeSound = SoundInfo.FromXml(changeNode, basePath);
@@ -36,7 +36,7 @@ namespace MegaMan.Common
             if (backgroundNode != null) Background = FilePath.FromRelative(backgroundNode.Value, basePath);
 
             foreach (XElement weapon in reader.Elements("Weapon"))
-                weapons.Add(WeaponInfo.FromXml(weapon, basePath));
+                weapons.Add(PauseWeaponInfo.FromXml(weapon, basePath));
 
             XElement livesNode = reader.Element("Lives");
             if (livesNode != null)
@@ -54,7 +54,7 @@ namespace MegaMan.Common
 
             if (Background != null) writer.WriteElementString("Background", Background.Relative);
 
-            foreach (WeaponInfo weapon in weapons) weapon.Save(writer);
+            foreach (PauseWeaponInfo weapon in weapons) weapon.Save(writer);
 
             if (LivesPosition != Point.Empty)
             {

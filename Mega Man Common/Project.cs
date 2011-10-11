@@ -68,6 +68,8 @@ namespace MegaMan.Common
 
         public PauseScreen PauseScreen { get; set; }
 
+        public string TitleScene { get; set; }
+
         #endregion
 
         public Project()
@@ -121,6 +123,12 @@ namespace MegaMan.Common
                     info.StagePath = FilePath.FromRelative(stageNode.RequireAttribute("path").Value, this.BaseDir);
                     stages.Add(info);
                 }
+            }
+
+            XElement titleNode = reader.Element("Title");
+            if (titleNode != null)
+            {
+                TitleScene = titleNode.RequireAttribute("scene").Value;
             }
 
             XElement stageSelectNode = reader.Element("StageSelect");

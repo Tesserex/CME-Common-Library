@@ -88,12 +88,20 @@ namespace MegaMan.Common
                         info.Commands.Add(KeyFramePlayCommandInfo.FromXml(cmdNode));
                         break;
 
-                    case "Add":
-                        info.Commands.Add(KeyFrameAddCommandInfo.FromXml(cmdNode));
+                    case "Sprite":
+                        info.Commands.Add(KeyFrameSpriteCommandInfo.FromXml(cmdNode));
                         break;
 
                     case "Remove":
                         info.Commands.Add(KeyFrameRemoveCommandInfo.FromXml(cmdNode));
+                        break;
+
+                    case "Entity":
+                        info.Commands.Add(KeyFrameEntityCommandInfo.FromXml(cmdNode));
+                        break;
+
+                    case "Text":
+                        info.Commands.Add(KeyFrameTextCommandInfo.FromXml(cmdNode));
                         break;
                 }
             }
@@ -117,8 +125,10 @@ namespace MegaMan.Common
     public enum KeyFrameCommands
     {
         PlayMusic,
-        Add,
-        Remove
+        Sprite,
+        Remove,
+        Entity,
+        Text
     }
 
     public interface IKeyFrameCommandInfo
@@ -147,18 +157,19 @@ namespace MegaMan.Common
         }
     }
 
-    public class KeyFrameAddCommandInfo : IKeyFrameCommandInfo
+    public class KeyFrameSpriteCommandInfo : IKeyFrameCommandInfo
     {
-        public KeyFrameCommands Type { get { return KeyFrameCommands.Add; } }
+        public KeyFrameCommands Type { get { return KeyFrameCommands.Sprite; } }
         public string Name { get; set; }
         public string Sprite { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
 
-        public static KeyFrameAddCommandInfo FromXml(XElement node)
+        public static KeyFrameSpriteCommandInfo FromXml(XElement node)
         {
-            var info = new KeyFrameAddCommandInfo();
-            info.Name = node.RequireAttribute("name").Value;
+            var info = new KeyFrameSpriteCommandInfo();
+            var nameAttr = node.Attribute("name");
+            if (nameAttr != null) info.Name = nameAttr.Value;
             info.Sprite = node.RequireAttribute("sprite").Value;
             info.X = node.GetInteger("x");
             info.Y = node.GetInteger("y");
@@ -168,7 +179,7 @@ namespace MegaMan.Common
         public void Save(XmlTextWriter writer)
         {
             writer.WriteStartElement("PlayMusic");
-            writer.WriteAttributeString("name", Name);
+            if (!string.IsNullOrEmpty(Name)) writer.WriteAttributeString("name", Name);
             writer.WriteAttributeString("sprite", Sprite);
             writer.WriteEndElement();
         }
@@ -190,6 +201,74 @@ namespace MegaMan.Common
         {
             writer.WriteStartElement("PlayMusic");
             writer.WriteAttributeString("name", Name);
+            writer.WriteEndElement();
+        }
+    }
+
+    public class KeyFrameEntityCommandInfo : IKeyFrameCommandInfo
+    {
+        public KeyFrameCommands Type { get { return KeyFrameCommands.Entity; } }
+        public string Name { get; set; }
+        public string Entity { get; set; }
+        public string State { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
+
+        public static KeyFrameEntityCommandInfo FromXml(XElement node)
+        {
+            var info = new KeyFrameEntityCommandInfo();
+            info.Entity = node.RequireAttribute("entity").Value;
+            var nameAttr = node.Attribute("name");
+            if (nameAttr != null) info.Name = nameAttr.Value;
+            var stateAttr = node.Attribute("state");
+            if (stateAttr != null) info.State = stateAttr.Value;
+            info.X = node.GetInteger("x");
+            info.Y = node.GetInteger("y");
+            return info;
+        }
+
+        public void Save(XmlTextWriter writer)
+        {
+            writer.WriteStartElement("Entity");
+            if (!string.IsNullOrEmpty(Name)) writer.WriteAttributeString("name", Name);
+            writer.WriteAttributeString("entity", Entity);
+            if (!string.IsNullOrEmpty(State)) writer.WriteAttributeString("state", State);
+            writer.WriteAttributeString("x", X.ToString());
+            writer.WriteAttributeString("y", Y.ToString());
+            writer.WriteEndElement();
+        }
+    }
+
+    public class KeyFrameTextCommandInfo : IKeyFrameCommandInfo
+    {
+        public KeyFrameCommands Type { get { return KeyFrameCommands.Text; } }
+        public string Name { get; set; }
+        public string Content { get; set; }
+        public int? Speed { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
+
+        public static KeyFrameTextCommandInfo FromXml(XElement node)
+        {
+            var info = new KeyFrameTextCommandInfo();
+            info.Content = node.RequireAttribute("content").Value;
+            var nameAttr = node.Attribute("name");
+            if (nameAttr != null) info.Name = nameAttr.Value;
+            int speed;
+            if (node.TryInteger("speed", out speed)) info.Speed = speed;
+            info.X = node.GetInteger("x");
+            info.Y = node.GetInteger("y");
+            return info;
+        }
+
+        public void Save(XmlTextWriter writer)
+        {
+            writer.WriteStartElement("Entity");
+            if (!string.IsNullOrEmpty(Name)) writer.WriteAttributeString("name", Name);
+            writer.WriteAttributeString("content", Content);
+            if (Speed != null) writer.WriteAttributeString("speed", Speed.Value.ToString());
+            writer.WriteAttributeString("x", X.ToString());
+            writer.WriteAttributeString("y", Y.ToString());
             writer.WriteEndElement();
         }
     }

@@ -103,6 +103,14 @@ namespace MegaMan.Common
                     case "Text":
                         info.Commands.Add(KeyFrameTextCommandInfo.FromXml(cmdNode));
                         break;
+
+                    case "Fill":
+                        info.Commands.Add(KeyFrameFillCommandInfo.FromXml(cmdNode));
+                        break;
+
+                    case "FillMove":
+                        info.Commands.Add(KeyFrameFillMoveCommandInfo.FromXml(cmdNode));
+                        break;
                 }
             }
 
@@ -128,7 +136,9 @@ namespace MegaMan.Common
         Sprite,
         Remove,
         Entity,
-        Text
+        Text,
+        Fill,
+        FillMove
     }
 
     public interface IKeyFrameCommandInfo
@@ -263,12 +273,94 @@ namespace MegaMan.Common
 
         public void Save(XmlTextWriter writer)
         {
-            writer.WriteStartElement("Entity");
+            writer.WriteStartElement("Text");
             if (!string.IsNullOrEmpty(Name)) writer.WriteAttributeString("name", Name);
             writer.WriteAttributeString("content", Content);
             if (Speed != null) writer.WriteAttributeString("speed", Speed.Value.ToString());
             writer.WriteAttributeString("x", X.ToString());
             writer.WriteAttributeString("y", Y.ToString());
+            writer.WriteEndElement();
+        }
+    }
+
+    public class KeyFrameFillCommandInfo : IKeyFrameCommandInfo
+    {
+        public KeyFrameCommands Type { get { return KeyFrameCommands.Fill; } }
+        public string Name { get; set; }
+        public byte Red { get; set; }
+        public byte Green { get; set; }
+        public byte Blue { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public int Layer { get; set; }
+
+        public static KeyFrameFillCommandInfo FromXml(XElement node)
+        {
+            var info = new KeyFrameFillCommandInfo();
+            var nameAttr = node.Attribute("name");
+            if (nameAttr != null) info.Name = nameAttr.Value;
+            var colorAttr = node.RequireAttribute("color");
+            var color = colorAttr.Value;
+            var split = color.Split(',');
+            info.Red = byte.Parse(split[0]);
+            info.Green = byte.Parse(split[1]);
+            info.Blue = byte.Parse(split[2]);
+            info.X = node.GetInteger("x");
+            info.Y = node.GetInteger("y");
+            info.Width = node.GetInteger("width");
+            info.Height = node.GetInteger("height");
+            int layer = 1;
+            if (node.TryInteger("layer", out layer)) info.Layer = layer;
+            return info;
+        }
+
+        public void Save(XmlTextWriter writer)
+        {
+            writer.WriteStartElement("Fill");
+            if (!string.IsNullOrEmpty(Name)) writer.WriteAttributeString("name", Name);
+            writer.WriteAttributeString("color", Red.ToString() + "," + Green.ToString() + "," + Blue.ToString());
+            writer.WriteAttributeString("x", X.ToString());
+            writer.WriteAttributeString("y", Y.ToString());
+            writer.WriteAttributeString("width", Width.ToString());
+            writer.WriteAttributeString("height", Height.ToString());
+            writer.WriteAttributeString("layer", Layer.ToString());
+            writer.WriteEndElement();
+        }
+    }
+
+    public class KeyFrameFillMoveCommandInfo : IKeyFrameCommandInfo
+    {
+        public KeyFrameCommands Type { get { return KeyFrameCommands.FillMove; } }
+        public string Name { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public int Duration { get; set; }
+
+        public static KeyFrameFillMoveCommandInfo FromXml(XElement node)
+        {
+            var info = new KeyFrameFillMoveCommandInfo();
+            info.Name = node.RequireAttribute("name").Value;
+            info.Duration = node.GetInteger("duration");
+            info.X = node.GetInteger("x");
+            info.Y = node.GetInteger("y");
+            info.Width = node.GetInteger("width");
+            info.Height = node.GetInteger("height");
+            return info;
+        }
+
+        public void Save(XmlTextWriter writer)
+        {
+            writer.WriteStartElement("Fill");
+            if (!string.IsNullOrEmpty(Name)) writer.WriteAttributeString("name", Name);
+            writer.WriteAttributeString("x", X.ToString());
+            writer.WriteAttributeString("y", Y.ToString());
+            writer.WriteAttributeString("width", Width.ToString());
+            writer.WriteAttributeString("height", Height.ToString());
+            writer.WriteAttributeString("duration", Duration.ToString());
             writer.WriteEndElement();
         }
     }

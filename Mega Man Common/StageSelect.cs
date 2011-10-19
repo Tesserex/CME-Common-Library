@@ -10,6 +10,7 @@ namespace MegaMan.Common
         public string Name { get; set; }
         public FilePath PortraitPath { get; set; }
         public string Stage { get; set; }
+        public string Scene { get; set; }
     }
 
     public class StageSelect
@@ -80,6 +81,13 @@ namespace MegaMan.Common
                 var portrait = bossNode.Attribute("portrait");
                 if (portrait != null) info.PortraitPath = FilePath.FromRelative(portrait.Value, baseDir);
                 info.Stage = bossNode.RequireAttribute("stage").Value;
+
+                var sceneAttr = bossNode.Attribute("scene");
+                if (sceneAttr != null)
+                {
+                    info.Scene = sceneAttr.Value;
+                }
+
                 bosses.Add(info);
             }
 
@@ -139,6 +147,7 @@ namespace MegaMan.Common
                 if (!string.IsNullOrEmpty(boss.Name)) writer.WriteAttributeString("name", boss.Name);
                 if (boss.PortraitPath != null && !string.IsNullOrEmpty(boss.PortraitPath.Relative)) writer.WriteAttributeString("portrait", boss.PortraitPath.Relative);
                 if (!string.IsNullOrEmpty(boss.Stage)) writer.WriteAttributeString("stage", boss.Stage);
+                if (!string.IsNullOrEmpty(boss.Scene)) writer.WriteAttributeString("scene", boss.Scene);
                 writer.WriteEndElement();
             }
 

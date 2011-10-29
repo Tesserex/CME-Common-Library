@@ -9,8 +9,7 @@ namespace MegaMan.Common
         public int Slot { get; set; }
         public string Name { get; set; }
         public FilePath PortraitPath { get; set; }
-        public string Stage { get; set; }
-        public string Scene { get; set; }
+        public HandlerTransfer NextHandler { get; set; }
     }
 
     public class StageSelect
@@ -80,12 +79,30 @@ namespace MegaMan.Common
                 if (bossNameAttr != null) info.Name = bossNameAttr.Value;
                 var portrait = bossNode.Attribute("portrait");
                 if (portrait != null) info.PortraitPath = FilePath.FromRelative(portrait.Value, baseDir);
-                info.Stage = bossNode.RequireAttribute("stage").Value;
 
-                var sceneAttr = bossNode.Attribute("scene");
-                if (sceneAttr != null)
+                // load next handler
+                var nextNode = bossNode.Element("Next");
+                if (nextNode != null)
                 {
-                    info.Scene = sceneAttr.Value;
+                    info.NextHandler = HandlerTransfer.FromXml(nextNode);
+                }
+                else
+                {
+                    // support old method
+                    info.NextHandler = new HandlerTransfer();
+
+                    var stageNode = bossNode.Attribute("stage");
+                    if (stageNode != null)
+                    {
+                        info.NextHandler.Type = HandlerType.Stage;
+                        info.NextHandler.Name = stageNode.Value;
+                    }
+                    else
+                    {
+                        var sceneAttr = bossNode.RequireAttribute("scene");
+                        info.NextHandler.Type = HandlerType.Scene;
+                        info.NextHandler.Name = sceneAttr.Value;
+                    }
                 }
 
                 bosses.Add(info);
@@ -146,8 +163,7 @@ namespace MegaMan.Common
                 if (boss.Slot >= 0) writer.WriteAttributeString("slot", boss.Slot.ToString());
                 if (!string.IsNullOrEmpty(boss.Name)) writer.WriteAttributeString("name", boss.Name);
                 if (boss.PortraitPath != null && !string.IsNullOrEmpty(boss.PortraitPath.Relative)) writer.WriteAttributeString("portrait", boss.PortraitPath.Relative);
-                if (!string.IsNullOrEmpty(boss.Stage)) writer.WriteAttributeString("stage", boss.Stage);
-                if (!string.IsNullOrEmpty(boss.Scene)) writer.WriteAttributeString("scene", boss.Scene);
+                if (boss.NextHandler != null) boss.NextHandler.Save(writer);
                 writer.WriteEndElement();
             }
 

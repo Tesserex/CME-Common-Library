@@ -11,9 +11,11 @@ namespace MegaMan.Common
     {
         public string Name { get; set; }
         public int Duration { get; set; }
+        public bool CanSkip { get; set; }
 
         public Dictionary<string, Sprite> Sprites { get; private set; }
         public List<KeyFrameInfo> KeyFrames { get; private set; }
+        public HandlerTransfer NextHandler { get; private set; }
 
         public SceneInfo()
         {
@@ -27,6 +29,10 @@ namespace MegaMan.Common
             info.Name = node.RequireAttribute("name").Value;
             info.Duration = node.GetInteger("duration");
 
+            bool canSkip = false;
+            node.TryBool("canskip", out canSkip);
+            info.CanSkip = canSkip;
+
             foreach (var spriteNode in node.Elements("Sprite"))
             {
                 var sprite = Sprite.FromXml(spriteNode, basePath);
@@ -38,12 +44,22 @@ namespace MegaMan.Common
                 info.KeyFrames.Add(KeyFrameInfo.FromXml(keyNode));
             }
 
+            var transferNode = node.Element("Next");
+            if (transferNode != null)
+            {
+                info.NextHandler = HandlerTransfer.FromXml(transferNode);
+            }
+
             return info;
         }
 
         public void Save(XmlTextWriter writer)
         {
             writer.WriteStartElement("Scene");
+
+            writer.WriteAttributeString("name", Name);
+            writer.WriteAttributeString("duration", Duration.ToString());
+            writer.WriteAttributeString("canskip", CanSkip.ToString());
 
             foreach (var sprite in Sprites.Values)
             {
@@ -53,6 +69,11 @@ namespace MegaMan.Common
             foreach (var keyframe in KeyFrames)
             {
                 keyframe.Save(writer);
+            }
+
+            if (NextHandler != null)
+            {
+                NextHandler.Save(writer);
             }
 
             writer.WriteEndElement();

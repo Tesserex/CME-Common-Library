@@ -95,6 +95,7 @@
     <Compile Include="FilePath.cs" />
     <Compile Include="GameXml.cs" />
     <Compile Include="GameXmlException.cs" />
+    <Compile Include="HandlerTransfer.cs" />
     <Compile Include="Map.cs" />
     <Compile Include="MeterInfo.cs" />
     <Compile Include="MusicInfo.cs" />

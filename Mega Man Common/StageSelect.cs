@@ -26,6 +26,8 @@ namespace MegaMan.Common
             this.bosses.Add(boss);
         }
 
+        public string Name { get; set; }
+
         public Sprite BossFrame { get; set; }
 
         public FilePath Background { get; set; }
@@ -44,6 +46,12 @@ namespace MegaMan.Common
         {
             BossSpacingHorizontal = 24;
             BossSpacingVertical = 16;
+
+            XAttribute nameAttr = stageSelectNode.Attribute("name");
+            if (nameAttr != null)
+            {
+                Name = nameAttr.Value;
+            }
 
             XElement frameNode = stageSelectNode.Element("BossFrame");
             if (frameNode != null)
@@ -134,6 +142,8 @@ namespace MegaMan.Common
         public void Save(XmlTextWriter writer)
         {
             writer.WriteStartElement("StageSelect");
+
+            if (Name != null) writer.WriteAttributeString("name", Name);
 
             if (Music != null) Music.Save(writer);
 

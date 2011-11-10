@@ -10,11 +10,15 @@ namespace MegaMan.Common
     {
         public string Name { get; set; }
         public FilePath StagePath { get; set; }
+        public HandlerTransfer WinHandler { get; set; }
+        public HandlerTransfer LoseHandler { get; set; }
     }
 
     public class Project
     {
         #region Game XML File Stuff
+
+        private List<StageSelect> stageSelects = new List<StageSelect>();
 
         private List<StageInfo> stages = new List<StageInfo>();
         
@@ -22,12 +26,22 @@ namespace MegaMan.Common
 
         public IEnumerable<StageInfo> Stages
         {
-            get { return stages; }
+            get { return stages.AsReadOnly(); }
+        }
+
+        public IEnumerable<StageSelect> StageSelects
+        {
+            get { return stageSelects.AsReadOnly(); }
         }
 
         public void AddStage(StageInfo stage)
         {
             this.stages.Add(stage);
+        }
+
+        public void AddStageSelect(StageSelect select)
+        {
+            stageSelects.Add(select);
         }
 
         public IEnumerable<string> Includes
@@ -64,11 +78,9 @@ namespace MegaMan.Common
         public FilePath MusicNSF { get; set; }
         public FilePath EffectsNSF { get; set; }
 
-        public StageSelect StageSelect { get; set; }
-
         public PauseScreen PauseScreen { get; set; }
 
-        public string TitleScene { get; set; }
+        public HandlerTransfer StartHandler { get; set; }
 
         #endregion
 
@@ -121,20 +133,40 @@ namespace MegaMan.Common
                     var info = new StageInfo();
                     info.Name = stageNode.RequireAttribute("name").Value;
                     info.StagePath = FilePath.FromRelative(stageNode.RequireAttribute("path").Value, this.BaseDir);
+
+                    var winNode = stageNode.Element("Win");
+                    if (winNode != null)
+                    {
+                        var winHandlerNode = winNode.Element("Next");
+                        if (winHandlerNode != null)
+                        {
+                            info.WinHandler = HandlerTransfer.FromXml(winHandlerNode);
+                        }
+                    }
+
+                    var loseNode = stageNode.Element("Lose");
+                    if (loseNode != null)
+                    {
+                        var loseHandlerNode = loseNode.Element("Next");
+                        if (loseHandlerNode != null)
+                        {
+                            info.LoseHandler = HandlerTransfer.FromXml(loseHandlerNode);
+                        }
+                    }
+
                     stages.Add(info);
                 }
             }
 
-            XElement titleNode = reader.Element("Title");
-            if (titleNode != null)
+            XElement startNode = reader.Element("Next");
+            if (startNode != null)
             {
-                TitleScene = titleNode.RequireAttribute("scene").Value;
+                StartHandler = HandlerTransfer.FromXml(startNode);
             }
 
-            XElement stageSelectNode = reader.Element("StageSelect");
-            if (stageSelectNode != null)
+            foreach (var stageSelectNode in reader.Elements("StageSelect"))
             {
-                this.StageSelect = new StageSelect(stageSelectNode, this.BaseDir);
+                stageSelects.Add(new StageSelect(stageSelectNode, this.BaseDir));
             }
 
             XElement pauseNode = reader.Element("PauseScreen");
@@ -183,11 +215,31 @@ namespace MegaMan.Common
                 writer.WriteStartElement("Stage");
                 writer.WriteAttributeString("name", info.Name);
                 writer.WriteAttributeString("path", info.StagePath.Relative);
+
+                if (info.WinHandler != null)
+                {
+                    writer.WriteStartElement("Win");
+                    info.WinHandler.Save(writer);
+                    writer.WriteEndElement();
+                }
+
+                if (info.LoseHandler != null)
+                {
+                    writer.WriteStartElement("Lose");
+                    info.LoseHandler.Save(writer);
+                    writer.WriteEndElement();
+                }
+
                 writer.WriteEndElement();
             }
             writer.WriteEndElement(); // Stages
 
-            if (this.StageSelect != null) this.StageSelect.Save(writer);
+            if (StartHandler != null) StartHandler.Save(writer);
+
+            foreach (var select in stageSelects)
+            {
+                select.Save(writer);
+            }
 
             if (this.PauseScreen != null) this.PauseScreen.Save(writer);
 

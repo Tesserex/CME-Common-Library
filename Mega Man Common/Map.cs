@@ -416,7 +416,7 @@ namespace MegaMan.Common
                     writer.WriteStartElement("Teleport");
                     writer.WriteAttributeString("from_x", teleport.From.X.ToString());
                     writer.WriteAttributeString("from_y", teleport.From.Y.ToString());
-                    writer.WriteAttributeString("screen", teleport.TargetScreen);
+                    writer.WriteAttributeString("to_screen", teleport.TargetScreen);
                     writer.WriteAttributeString("to_x", teleport.To.X.ToString());
                     writer.WriteAttributeString("to_y", teleport.To.Y.ToString());
                     writer.WriteEndElement();

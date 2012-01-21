@@ -14,6 +14,13 @@ namespace MegaMan.Common
             get { return weapons; }
         }
 
+        private List<InventoryInfo> inventory;
+
+        public IEnumerable<InventoryInfo> Inventory
+        {
+            get { return inventory; }
+        }
+
         public FilePath Background { get; set; }
 
         public SoundInfo ChangeSound { get; set; }
@@ -25,6 +32,7 @@ namespace MegaMan.Common
         public PauseScreen(XElement reader, string basePath)
         {
             weapons = new List<PauseWeaponInfo>();
+            inventory = new List<InventoryInfo>();
 
             XElement changeNode = reader.Element("ChangeSound");
             if (changeNode != null) ChangeSound = SoundInfo.FromXml(changeNode, basePath);
@@ -42,6 +50,11 @@ namespace MegaMan.Common
             if (livesNode != null)
             {
                 LivesPosition = new Point(livesNode.GetInteger("x"), livesNode.GetInteger("y"));
+            }
+
+            foreach (XElement inventoryNode in reader.Elements("Inventory"))
+            {
+                inventory.Add(InventoryInfo.FromXml(inventoryNode, basePath));
             }
         }
 
@@ -62,6 +75,11 @@ namespace MegaMan.Common
                 writer.WriteAttributeString("x", LivesPosition.X.ToString());
                 writer.WriteAttributeString("y", LivesPosition.Y.ToString());
                 writer.WriteEndElement();
+            }
+
+            foreach (var item in inventory)
+            {
+                item.Save(writer);
             }
 
             writer.WriteEndElement();

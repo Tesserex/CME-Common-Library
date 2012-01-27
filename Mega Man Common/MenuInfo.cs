@@ -10,6 +10,7 @@ namespace MegaMan.Common
     public class MenuInfo
     {
         public string Name { get; set; }
+        public SoundInfo ChangeSound { get; set; }
 
         public Dictionary<string, Sprite> Sprites { get; private set; }
         public List<MenuStateInfo> States { get; private set; }
@@ -33,7 +34,13 @@ namespace MegaMan.Common
 
             foreach (var keyNode in node.Elements("State"))
             {
-                info.States.Add(MenuStateInfo.FromXml(keyNode));
+                info.States.Add(MenuStateInfo.FromXml(keyNode, basePath));
+            }
+
+            XElement soundNode = node.Element("Sound");
+            if (soundNode != null)
+            {
+                info.ChangeSound = SoundInfo.FromXml(soundNode, basePath);
             }
 
             return info;
@@ -50,6 +57,11 @@ namespace MegaMan.Common
                 sprite.WriteTo(writer);
             }
 
+            if (ChangeSound != null)
+            {
+                ChangeSound.Save(writer);
+            }
+
             foreach (var state in States)
             {
                 state.Save(writer);
@@ -63,14 +75,9 @@ namespace MegaMan.Common
     {
         public string Name { get; set; }
         public bool Fade { get; set; }
-        public List<IKeyFrameCommandInfo> Commands { get; private set; }
+        public List<SceneCommandInfo> Commands { get; private set; }
 
-        public MenuStateInfo()
-        {
-            Commands = new List<IKeyFrameCommandInfo>();
-        }
-
-        public static MenuStateInfo FromXml(XElement node)
+        public static MenuStateInfo FromXml(XElement node, string basePath)
         {
             var info = new MenuStateInfo();
 
@@ -80,43 +87,7 @@ namespace MegaMan.Common
             node.TryBool("fade", out fade);
             info.Fade = fade;
 
-            foreach (var cmdNode in node.Elements())
-            {
-                switch (cmdNode.Name.LocalName)
-                {
-                    case "PlayMusic":
-                        info.Commands.Add(KeyFramePlayCommandInfo.FromXml(cmdNode));
-                        break;
-
-                    case "Sprite":
-                        info.Commands.Add(KeyFrameSpriteCommandInfo.FromXml(cmdNode));
-                        break;
-
-                    case "Remove":
-                        info.Commands.Add(KeyFrameRemoveCommandInfo.FromXml(cmdNode));
-                        break;
-
-                    case "Entity":
-                        info.Commands.Add(KeyFrameEntityCommandInfo.FromXml(cmdNode));
-                        break;
-
-                    case "Text":
-                        info.Commands.Add(KeyFrameTextCommandInfo.FromXml(cmdNode));
-                        break;
-
-                    case "Fill":
-                        info.Commands.Add(KeyFrameFillCommandInfo.FromXml(cmdNode));
-                        break;
-
-                    case "FillMove":
-                        info.Commands.Add(KeyFrameFillMoveCommandInfo.FromXml(cmdNode));
-                        break;
-
-                    case "Option":
-                        info.Commands.Add(MenuOptionCommandInfo.FromXml(cmdNode));
-                        break;
-                }
-            }
+            info.Commands = SceneCommandInfo.Load(node, basePath);
 
             return info;
         }
@@ -135,36 +106,5 @@ namespace MegaMan.Common
         }
     }
 
-    public class MenuOptionCommandInfo : IKeyFrameCommandInfo
-    {
-        public KeyFrameCommands Type { get { return KeyFrameCommands.Option; } }
-
-        public int X { get; set; }
-        public int Y { get; set; }
-
-        public HandlerTransfer NextHandler { get; private set; }
-
-        public static MenuOptionCommandInfo FromXml(XElement node)
-        {
-            var info = new MenuOptionCommandInfo();
-            info.X = node.GetInteger("x");
-            info.Y = node.GetInteger("y");
-
-            var nextNode = node.Element("Next");
-            if (nextNode != null)
-            {
-                info.NextHandler = HandlerTransfer.FromXml(nextNode);
-            }
-
-            return info;
-        }
-
-        public void Save(XmlTextWriter writer)
-        {
-            writer.WriteStartElement("Option");
-            writer.WriteAttributeString("x", X.ToString());
-            writer.WriteAttributeString("y", Y.ToString());
-            writer.WriteEndElement();
-        }
-    }
+    
 }

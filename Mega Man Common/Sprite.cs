@@ -145,6 +145,7 @@ namespace MegaMan.Common
             this.Layer = copy.Layer;
             this.texture = copy.texture;
             this.Reversed = copy.Reversed;
+            this.SheetPath = copy.SheetPath;
         }
 
         public void SetTexture(GraphicsDevice device, string sheet)

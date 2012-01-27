@@ -11,13 +11,15 @@ namespace MegaMan.Common
     {
         Stage,
         Scene,
-        StageSelect
+        StageSelect,
+        Menu
     }
 
     public class HandlerTransfer
     {
         public HandlerType Type;
         public string Name;
+        public bool Fade;
 
         public static HandlerTransfer FromXml(XElement node)
         {
@@ -36,9 +38,16 @@ namespace MegaMan.Common
                 case "scene":
                     transfer.Type = HandlerType.Scene;
                     break;
+
+                case "menu":
+                    transfer.Type = HandlerType.Menu;
+                    break;
             }
 
             transfer.Name = node.RequireAttribute("name").Value;
+            bool f = false;
+            node.TryBool("fade", out f);
+            transfer.Fade = f;
 
             return transfer;
         }
@@ -49,6 +58,7 @@ namespace MegaMan.Common
 
             writer.WriteAttributeString("type", Enum.GetName(typeof(HandlerType), Type));
             writer.WriteAttributeString("name", Name);
+            writer.WriteAttributeString("fade", Fade.ToString());
 
             writer.WriteEndElement();
         }

@@ -16,6 +16,7 @@ namespace MegaMan.Common
         public string UseFunction { get; set; }
         public Point IconLocation { get; set; }
         public Point NumberLocation { get; set; }
+        public bool Selectable { get; set; }
 
         public static InventoryInfo FromXml(XElement inventoryNode, string basePath)
         {
@@ -43,6 +44,10 @@ namespace MegaMan.Common
                 info.NumberLocation = new Point(numberNode.GetInteger("x"), numberNode.GetInteger("y"));
             }
 
+            bool b = true;
+            inventoryNode.TryBool("selectable", out b);
+            info.Selectable = b;
+
             return info;
         }
 
@@ -52,6 +57,7 @@ namespace MegaMan.Common
 
             writer.WriteAttributeString("name", Name);
             if (UseFunction != null) writer.WriteAttributeString("use", UseFunction);
+            writer.WriteAttributeString("selectable", Selectable.ToString());
 
             if (IconOn != null)
             {

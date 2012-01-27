@@ -10,6 +10,7 @@ namespace MegaMan.Common
         public string Name { get; set; }
         public FilePath PortraitPath { get; set; }
         public HandlerTransfer NextHandler { get; set; }
+        public SoundInfo Sound { get; set; }
     }
 
     public class StageSelect
@@ -113,6 +114,12 @@ namespace MegaMan.Common
                     }
                 }
 
+                XElement selectSound = bossNode.Element("Sound");
+                if (selectSound != null)
+                {
+                    info.Sound = SoundInfo.FromXml(selectSound, baseDir);
+                }
+
                 bosses.Add(info);
             }
 
@@ -174,6 +181,10 @@ namespace MegaMan.Common
                 if (!string.IsNullOrEmpty(boss.Name)) writer.WriteAttributeString("name", boss.Name);
                 if (boss.PortraitPath != null && !string.IsNullOrEmpty(boss.PortraitPath.Relative)) writer.WriteAttributeString("portrait", boss.PortraitPath.Relative);
                 if (boss.NextHandler != null) boss.NextHandler.Save(writer);
+                if (boss.Sound != null)
+                {
+                    boss.Sound.Save(writer);
+                }
                 writer.WriteEndElement();
             }
 

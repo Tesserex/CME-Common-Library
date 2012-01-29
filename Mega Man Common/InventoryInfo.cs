@@ -64,6 +64,8 @@ namespace MegaMan.Common
                 writer.WriteStartElement("Icon");
                 writer.WriteAttributeString("on", IconOn.Relative);
                 writer.WriteAttributeString("off", IconOff.Relative);
+                writer.WriteAttributeString("x", IconLocation.X.ToString());
+                writer.WriteAttributeString("y", IconLocation.Y.ToString());
                 writer.WriteEndElement();
             }
 

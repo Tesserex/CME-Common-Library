@@ -9,7 +9,7 @@ using XnaColor = Microsoft.Xna.Framework.Color;
 
 namespace MegaMan.Common
 {
-    public struct EnemyCopyInfo
+    public class EnemyCopyInfo
     {
         public string enemy;
         public string state;

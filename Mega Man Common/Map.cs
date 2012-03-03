@@ -216,7 +216,7 @@ namespace MegaMan.Common
                 }
                 foreach (XElement entity in screen.Elements("Entity"))
                 {
-                    EnemyCopyInfo info = ParseEntity(entity);
+                    EntityPlacement info = EntityPlacement.FromXml(entity);
                     info.boss = false;
                     XAttribute palAttr = entity.Attribute("pallete");
                     if (palAttr != null) info.pallete = palAttr.Value;
@@ -261,34 +261,11 @@ namespace MegaMan.Common
 
                 foreach (XElement entity in screen.Elements("Boss"))
                 {
-                    EnemyCopyInfo info = ParseEntity(entity);
+                    EntityPlacement info = EntityPlacement.FromXml(entity);
                     info.boss = true;
                     s.AddEnemy(info);
                 }
             }
-        }
-
-        private EnemyCopyInfo ParseEntity(XElement entity)
-        {
-            var nameAttr = entity.Attribute("name");
-            if (nameAttr == null) throw new Exception("Entity tag must have a name attribute!");
-            string enemyname = nameAttr.Value;
-
-            string state = "Start";
-            XAttribute stateAttr = entity.Attribute("state");
-            if (stateAttr != null) state = stateAttr.Value;
-
-            int enemyX;
-            entity.Attribute("x").Value.TryParse(out enemyX);
-            int enemyY;
-            entity.Attribute("y").Value.TryParse(out enemyY);
-            EnemyCopyInfo info = new EnemyCopyInfo();
-            info.enemy = enemyname;
-            info.state = state;
-            info.screenX = enemyX;
-            info.screenY = enemyY;
-
-            return info;
         }
 
         public void RenameScreen(Screen screen, string name)
@@ -381,14 +358,9 @@ namespace MegaMan.Common
                     writer.WriteEndElement();
                 }
 
-                foreach (EnemyCopyInfo info in Screens[id].EnemyInfo)
+                foreach (EntityPlacement info in Screens[id].EnemyInfo)
                 {
-                    writer.WriteStartElement("Entity");
-                    writer.WriteAttributeString("name", info.enemy);
-                    if (info.state != "Start") writer.WriteAttributeString("state", info.state);
-                    writer.WriteAttributeString("x", info.screenX.ToString());
-                    writer.WriteAttributeString("y", info.screenY.ToString());
-                    writer.WriteEndElement();
+                    info.Save(writer);
                 }
 
                 foreach (BlockPatternInfo pattern in Screens[id].BlockPatternInfo)

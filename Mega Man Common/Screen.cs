@@ -9,16 +9,6 @@ using XnaColor = Microsoft.Xna.Framework.Color;
 
 namespace MegaMan.Common
 {
-    public class EnemyCopyInfo
-    {
-        public string enemy;
-        public string state;
-        public float screenX;
-        public float screenY;
-        public string pallete;
-        public bool boss;
-    }
-
     public struct TeleportInfo
     {
         public Point From;
@@ -36,7 +26,7 @@ namespace MegaMan.Common
 
         public Map Map { get; private set; }
 
-        public List<EnemyCopyInfo> EnemyInfo { get; private set; }
+        public List<EntityPlacement> EnemyInfo { get; private set; }
         public List<BlockPatternInfo> BlockPatternInfo { get; private set; }
         public List<TeleportInfo> Teleports { get; private set; }
         
@@ -56,7 +46,7 @@ namespace MegaMan.Common
         {
             this.Map = parent;
 
-            EnemyInfo = new List<EnemyCopyInfo>();
+            EnemyInfo = new List<EntityPlacement>();
             BlockPatternInfo = new List<BlockPatternInfo>();
             Teleports = new List<TeleportInfo>();
             Tileset = parent.Tileset;
@@ -87,7 +77,7 @@ namespace MegaMan.Common
                 }
             }
 
-            EnemyInfo = new List<EnemyCopyInfo>();
+            EnemyInfo = new List<EntityPlacement>();
             BlockPatternInfo = new List<BlockPatternInfo>();
             Teleports = new List<TeleportInfo>();
         }
@@ -137,7 +127,7 @@ namespace MegaMan.Common
             return tiles[y][x];
         }
 
-        public void AddEnemy(EnemyCopyInfo enemy)
+        public void AddEnemy(EntityPlacement enemy)
         {
             EnemyInfo.Add(enemy);
         }

@@ -15,9 +15,17 @@ namespace MegaMan.Common
         Menu
     }
 
+    public enum HandlerMode
+    {
+        Next,
+        Push,
+        Pop
+    }
+
     public class HandlerTransfer
     {
         public HandlerType Type;
+        public HandlerMode Mode;
         public string Name;
         public bool Fade;
 
@@ -25,26 +33,39 @@ namespace MegaMan.Common
         {
             HandlerTransfer transfer = new HandlerTransfer();
 
-            switch (node.RequireAttribute("type").Value.ToLower())
+            var modeAttr = node.Attribute("mode");
+            var mode = HandlerMode.Next;
+            if (modeAttr != null)
             {
-                case "stage":
-                    transfer.Type = HandlerType.Stage;
-                    break;
-
-                case "stageselect":
-                    transfer.Type = HandlerType.StageSelect;
-                    break;
-
-                case "scene":
-                    transfer.Type = HandlerType.Scene;
-                    break;
-
-                case "menu":
-                    transfer.Type = HandlerType.Menu;
-                    break;
+                Enum.TryParse<HandlerMode>(modeAttr.Value, true, out mode);
             }
 
-            transfer.Name = node.RequireAttribute("name").Value;
+            transfer.Mode = mode;
+
+            if (mode != HandlerMode.Pop)
+            {
+                switch (node.RequireAttribute("type").Value.ToLower())
+                {
+                    case "stage":
+                        transfer.Type = HandlerType.Stage;
+                        break;
+
+                    case "stageselect":
+                        transfer.Type = HandlerType.StageSelect;
+                        break;
+
+                    case "scene":
+                        transfer.Type = HandlerType.Scene;
+                        break;
+
+                    case "menu":
+                        transfer.Type = HandlerType.Menu;
+                        break;
+                }
+
+                transfer.Name = node.RequireAttribute("name").Value;
+            }
+
             bool f = false;
             node.TryBool("fade", out f);
             transfer.Fade = f;
@@ -56,8 +77,17 @@ namespace MegaMan.Common
         {
             writer.WriteStartElement("Next");
 
-            writer.WriteAttributeString("type", Enum.GetName(typeof(HandlerType), Type));
-            writer.WriteAttributeString("name", Name);
+            if (Mode != HandlerMode.Next)
+            {
+                writer.WriteAttributeString("mode", Mode.ToString());
+            }
+
+            if (Mode != HandlerMode.Pop)
+            {
+                writer.WriteAttributeString("type", Enum.GetName(typeof(HandlerType), Type));
+                writer.WriteAttributeString("name", Name);
+            }
+
             writer.WriteAttributeString("fade", Fade.ToString());
 
             writer.WriteEndElement();

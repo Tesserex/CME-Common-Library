@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Xml.Linq;
+using System.Xml;
 
 namespace MegaMan.Common
 {
@@ -22,57 +23,47 @@ namespace MegaMan.Common
         public int LeftBoundary { get; private set; }
         public int RightBoundary { get; private set; }
 
-        public BlockPatternInfo(XElement xmlNode)
+        public static BlockPatternInfo FromXml(XElement xmlNode)
         {
-            int left, right, length;
+            var info = new BlockPatternInfo();
 
-            XAttribute leftAttr = xmlNode.Attribute("left");
-            if (leftAttr == null) throw new Exception("Blocks must specify a numeric left attribute");
-            if (!leftAttr.Value.TryParse(out left)) throw new Exception("Blocks left attribute is not a valid number!");
+            info.Entity = xmlNode.RequireAttribute("entity").Value;
+            info.LeftBoundary = xmlNode.GetInteger("left");
+            info.RightBoundary = xmlNode.GetInteger("right");
+            info.Length = xmlNode.GetInteger("length");
 
-            XAttribute rightAttr = xmlNode.Attribute("right");
-            if (rightAttr == null) throw new Exception("Blocks must specify a numeric right attribute");
-            if (!rightAttr.Value.TryParse(out right)) throw new Exception("Blocks right attribute is not a valid number!");
-
-            XAttribute lenAttr = xmlNode.Attribute("length");
-            if (lenAttr == null) throw new Exception("Blocks must specify a numeric length attribute");
-            if (!lenAttr.Value.TryParse(out length)) throw new Exception("Blocks length attribute is not a valid number!");
-
-            XAttribute nameAttr = xmlNode.Attribute("entity");
-            if (nameAttr == null) throw new Exception("Blocks must specify an entity attribute.");
-            Entity = nameAttr.Value;
-            LeftBoundary = left;
-            RightBoundary = right;
-            Length = length;
-
-            Blocks = new List<BlockInfo>();
-            foreach (XElement block in xmlNode.Elements("Block"))
+            info.Blocks = new List<BlockInfo>();
+            foreach (XElement blockInfo in xmlNode.Elements("Block"))
             {
-                int x, y, on, off;
+                BlockInfo block = new BlockInfo();
+                block.pos = new PointF((float)blockInfo.GetDouble("x"), (float)blockInfo.GetDouble("y"));
+                block.on = blockInfo.GetInteger("on");
+                block.off = blockInfo.GetInteger("off");
 
-                XAttribute attr = block.Attribute("x");
-                if (attr == null) throw new Exception("Block must specify a numeric x attribute");
-                if (!attr.Value.TryParse(out x)) throw new Exception("Blocks x attribute is not a valid number!");
-
-                attr = block.Attribute("y");
-                if (attr == null) throw new Exception("Block must specify a numeric y attribute");
-                if (!attr.Value.TryParse(out y)) throw new Exception("Blocks y attribute is not a valid number!");
-
-                attr = block.Attribute("on");
-                if (attr == null) throw new Exception("Block must specify a numeric on attribute");
-                if (!attr.Value.TryParse(out on)) throw new Exception("Blocks on attribute is not a valid number!");
-
-                attr = block.Attribute("off");
-                if (attr == null) throw new Exception("Block must specify a numeric off attribute");
-                if (!attr.Value.TryParse(out off)) throw new Exception("Blocks off attribute is not a valid number!");
-
-                BlockInfo info = new BlockInfo();
-                info.pos = new PointF(x, y);
-                info.on = on;
-                info.off = off;
-
-                this.Blocks.Add(info);
+                info.Blocks.Add(block);
             }
+
+            return info;
+        }
+
+        public void Save(XmlTextWriter writer)
+        {
+            writer.WriteStartElement("Blocks");
+            writer.WriteAttributeString("left", LeftBoundary.ToString());
+            writer.WriteAttributeString("right", RightBoundary.ToString());
+            writer.WriteAttributeString("length", Length.ToString());
+            writer.WriteAttributeString("entity", Entity);
+
+            foreach (BlockPatternInfo.BlockInfo block in Blocks)
+            {
+                writer.WriteStartElement("Block");
+                writer.WriteAttributeString("x", block.pos.X.ToString());
+                writer.WriteAttributeString("y", block.pos.Y.ToString());
+                writer.WriteAttributeString("on", block.on.ToString());
+                writer.WriteAttributeString("off", block.off.ToString());
+                writer.WriteEndElement();
+            }
+            writer.WriteEndElement();
         }
     }
 }

@@ -238,7 +238,7 @@ namespace MegaMan.Common
                 }
                 foreach (XElement blocks in screen.Elements("Blocks"))
                 {
-                    BlockPatternInfo pattern = new BlockPatternInfo(blocks);
+                    BlockPatternInfo pattern = BlockPatternInfo.FromXml(blocks);
                     s.AddBlockPattern(pattern);
                 }
 
@@ -365,22 +365,7 @@ namespace MegaMan.Common
 
                 foreach (BlockPatternInfo pattern in Screens[id].BlockPatternInfo)
                 {
-                    writer.WriteStartElement("Blocks");
-                    writer.WriteAttributeString("left", pattern.LeftBoundary.ToString());
-                    writer.WriteAttributeString("right", pattern.RightBoundary.ToString());
-                    writer.WriteAttributeString("length", pattern.Length.ToString());
-                    writer.WriteAttributeString("entity", pattern.Entity);
-
-                    foreach (BlockPatternInfo.BlockInfo block in pattern.Blocks)
-                    {
-                        writer.WriteStartElement("Block");
-                        writer.WriteAttributeString("x", block.pos.X.ToString());
-                        writer.WriteAttributeString("y", block.pos.Y.ToString());
-                        writer.WriteAttributeString("on", block.on.ToString());
-                        writer.WriteAttributeString("off", block.off.ToString());
-                        writer.WriteEndElement();
-                    }
-                    writer.WriteEndElement();
+                    pattern.Save(writer);
                 }
 
                 foreach (TeleportInfo teleport in Screens[id].Teleports) 

@@ -28,6 +28,7 @@ namespace MegaMan.Common
         public HandlerMode Mode;
         public string Name;
         public bool Fade;
+        public bool Pause;
 
         public static HandlerTransfer FromXml(XElement node)
         {
@@ -41,6 +42,13 @@ namespace MegaMan.Common
             }
 
             transfer.Mode = mode;
+
+            if (mode == HandlerMode.Push)
+            {
+                bool pause = true;
+                node.TryBool("pause", out pause);
+                transfer.Pause = pause;
+            }
 
             if (mode != HandlerMode.Pop)
             {
@@ -80,6 +88,11 @@ namespace MegaMan.Common
             if (Mode != HandlerMode.Next)
             {
                 writer.WriteAttributeString("mode", Mode.ToString());
+            }
+
+            if (Mode == HandlerMode.Push)
+            {
+                writer.WriteAttributeString("pause", Pause.ToString());
             }
 
             if (Mode != HandlerMode.Pop)

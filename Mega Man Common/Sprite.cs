@@ -361,8 +361,7 @@ namespace MegaMan.Common
 
         public static Sprite FromXml(XElement element, string basePath)
         {
-            XAttribute tileattr = element.Attribute("tilesheet");
-            if (tileattr == null) throw new ArgumentException("Sprite element does not specify a tilesheet!");
+            XAttribute tileattr = element.RequireAttribute("tilesheet");
             Sprite sprite;
 
             string sheetPath = Path.Combine(basePath, tileattr.Value);
@@ -374,8 +373,8 @@ namespace MegaMan.Common
 
         public static Sprite FromXml(XElement element, Image tilesheet)
         {
-            int width = Int32.Parse(element.RequireAttribute("width").Value);
-            int height = Int32.Parse(element.RequireAttribute("height").Value);
+            int width = element.GetInteger("width");
+            int height = element.GetInteger("height");
 
             Sprite sprite = new Sprite(width, height) {sheet = tilesheet};
 
@@ -395,6 +394,10 @@ namespace MegaMan.Common
                 int hx = Int32.Parse(hotspot.RequireAttribute("x").Value);
                 int hy = Int32.Parse(hotspot.RequireAttribute("y").Value);
                 sprite.HotSpot = new DrawPoint(hx, hy);
+            }
+            else
+            {
+                sprite.HotSpot = new DrawPoint(0, 0);
             }
 
             XAttribute layerAttr = element.Attribute("layer");
@@ -417,10 +420,16 @@ namespace MegaMan.Common
 
             foreach (XElement frame in element.Elements("Frame"))
             {
-                int duration = Int32.Parse(frame.RequireAttribute("duration").Value);
+                int duration = 0;
+                frame.TryInteger("duration", out duration);
                 int x = frame.GetInteger("x");
                 int y = frame.GetInteger("y");
                 sprite.AddFrame(tilesheet, x, y, duration);
+            }
+
+            if (sprite.frames.Count == 0)
+            {
+                sprite.AddFrame(tilesheet, 0, 0, 0);
             }
 
             return sprite;

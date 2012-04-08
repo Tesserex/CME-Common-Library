@@ -19,7 +19,8 @@ namespace MegaMan.Common
         FillMove,
         Option,
         Sound,
-        Next
+        Next,
+        Call
     }
 
     public abstract class SceneCommandInfo
@@ -77,6 +78,10 @@ namespace MegaMan.Common
 
                     case "Next":
                         list.Add(SceneNextCommandInfo.FromXml(cmdNode));
+                        break;
+
+                    case "Call":
+                        list.Add(SceneCallCommandInfo.FromXml(cmdNode));
                         break;
                 }
             }
@@ -194,6 +199,7 @@ namespace MegaMan.Common
         public override SceneCommands Type { get { return SceneCommands.Text; } }
         public string Name { get; set; }
         public string Content { get; set; }
+        public SceneBindingInfo Binding { get; set; }
         public int? Speed { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
@@ -201,13 +207,19 @@ namespace MegaMan.Common
         public static SceneTextCommandInfo FromXml(XElement node)
         {
             var info = new SceneTextCommandInfo();
-            info.Content = node.RequireAttribute("content").Value;
+            var contentAttr = node.Attribute("content");
+            if (contentAttr != null)
+            {
+                info.Content = contentAttr.Value;
+            }
             var nameAttr = node.Attribute("name");
             if (nameAttr != null) info.Name = nameAttr.Value;
             int speed;
             if (node.TryInteger("speed", out speed)) info.Speed = speed;
             info.X = node.GetInteger("x");
             info.Y = node.GetInteger("y");
+            var bindingNode = node.Element("Binding");
+            if (bindingNode != null) info.Binding = SceneBindingInfo.FromXml(bindingNode);
             return info;
         }
 
@@ -219,6 +231,7 @@ namespace MegaMan.Common
             if (Speed != null) writer.WriteAttributeString("speed", Speed.Value.ToString());
             writer.WriteAttributeString("x", X.ToString());
             writer.WriteAttributeString("y", Y.ToString());
+            if (Binding != null) Binding.Save(writer);
             writer.WriteEndElement();
         }
     }
@@ -455,6 +468,50 @@ namespace MegaMan.Common
         public override void Save(XmlTextWriter writer)
         {
             NextHandler.Save(writer);
+        }
+    }
+
+    public class SceneCallCommandInfo : SceneCommandInfo
+    {
+        public override SceneCommands Type { get { return SceneCommands.Call; } }
+
+        public string Name { get; private set; }
+
+        public static SceneCallCommandInfo FromXml(XElement node)
+        {
+            var info = new SceneCallCommandInfo();
+
+            info.Name = node.Value;
+
+            return info;
+        }
+
+        public override void Save(XmlTextWriter writer)
+        {
+            writer.WriteStartElement("Call");
+            writer.WriteValue(this.Name);
+            writer.WriteEndElement();
+        }
+    }
+
+    public class SceneBindingInfo
+    {
+        public string Source { get; set; }
+        public string Target { get; set; }
+
+        public static SceneBindingInfo FromXml(XElement node)
+        {
+            var info = new SceneBindingInfo();
+            info.Source = node.RequireAttribute("source").Value;
+            info.Target = node.RequireAttribute("target").Value;
+            return info;
+        }
+
+        public void Save(XmlTextWriter writer)
+        {
+            writer.WriteStartElement("Bind");
+            writer.WriteAttributeString("source", Source);
+            writer.WriteAttributeString("target", Target);
         }
     }
 }

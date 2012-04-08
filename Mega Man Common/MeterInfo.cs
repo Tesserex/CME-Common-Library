@@ -22,6 +22,7 @@ namespace MegaMan.Common
         public Orientation Orient { get; set; }
         public Point TickOffset { get; set; }
         public SoundInfo Sound { get; set; }
+        public SceneBindingInfo Binding { get; set; }
 
         public static MeterInfo FromXml(XElement meterNode, string basePath)
         {
@@ -54,6 +55,9 @@ namespace MegaMan.Common
             XElement soundNode = meterNode.Element("Sound");
             if (soundNode != null) meter.Sound = SoundInfo.FromXml(soundNode, basePath);
 
+            XElement bindingNode = meterNode.Element("Binding");
+            if (bindingNode != null) meter.Binding = SceneBindingInfo.FromXml(bindingNode);
+
             return meter;
         }
 
@@ -74,6 +78,8 @@ namespace MegaMan.Common
             writer.WriteAttributeString("tickY", TickOffset.Y.ToString());
 
             if (Sound != null) Sound.Save(writer);
+
+            if (Binding != null) Binding.Save(writer);
 
             writer.WriteEndElement();
         }

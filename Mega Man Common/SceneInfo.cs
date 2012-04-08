@@ -7,64 +7,58 @@ using System.Xml;
 
 namespace MegaMan.Common
 {
-    public class SceneInfo
+    public class SceneInfo : HandlerInfo
     {
-        public string Name { get; set; }
         public int Duration { get; set; }
         public bool CanSkip { get; set; }
 
-        public Dictionary<string, Sprite> Sprites { get; private set; }
         public List<KeyFrameInfo> KeyFrames { get; private set; }
         public HandlerTransfer NextHandler { get; private set; }
 
         public SceneInfo()
         {
-            Sprites = new Dictionary<string, Sprite>();
             KeyFrames = new List<KeyFrameInfo>();
         }
 
         public static SceneInfo FromXml(XElement node, string basePath)
         {
             var info = new SceneInfo();
-            info.Name = node.RequireAttribute("name").Value;
-            info.Duration = node.GetInteger("duration");
+
+            info.Load(node, basePath);
+
+            return info;
+        }
+
+        protected override void Load(XElement node, string basePath)
+        {
+            base.Load(node, basePath);
+
+            this.Duration = node.GetInteger("duration");
 
             bool canSkip = false;
             node.TryBool("canskip", out canSkip);
-            info.CanSkip = canSkip;
-
-            foreach (var spriteNode in node.Elements("Sprite"))
-            {
-                var sprite = Sprite.FromXml(spriteNode, basePath);
-                info.Sprites.Add(sprite.Name, sprite);
-            }
+            this.CanSkip = canSkip;
 
             foreach (var keyNode in node.Elements("Keyframe"))
             {
-                info.KeyFrames.Add(KeyFrameInfo.FromXml(keyNode, basePath));
+                this.KeyFrames.Add(KeyFrameInfo.FromXml(keyNode, basePath));
             }
 
             var transferNode = node.Element("Next");
             if (transferNode != null)
             {
-                info.NextHandler = HandlerTransfer.FromXml(transferNode);
+                this.NextHandler = HandlerTransfer.FromXml(transferNode);
             }
-
-            return info;
         }
 
-        public void Save(XmlTextWriter writer)
+        public override void Save(XmlTextWriter writer)
         {
             writer.WriteStartElement("Scene");
 
-            writer.WriteAttributeString("name", Name);
+            base.Save(writer);
+
             writer.WriteAttributeString("duration", Duration.ToString());
             writer.WriteAttributeString("canskip", CanSkip.ToString());
-
-            foreach (var sprite in Sprites.Values)
-            {
-                sprite.WriteTo(writer);
-            }
 
             foreach (var keyframe in KeyFrames)
             {

@@ -7,60 +7,39 @@ using System.Xml;
 
 namespace MegaMan.Common
 {
-    public class MenuInfo
+    public class MenuInfo : HandlerInfo
     {
-        public string Name { get; set; }
-        public SoundInfo ChangeSound { get; set; }
-
-        public Dictionary<string, Sprite> Sprites { get; private set; }
         public List<MenuStateInfo> States { get; private set; }
 
         public MenuInfo()
         {
-            Sprites = new Dictionary<string, Sprite>();
             States = new List<MenuStateInfo>();
         }
 
         public static MenuInfo FromXml(XElement node, string basePath)
         {
             var info = new MenuInfo();
-            info.Name = node.RequireAttribute("name").Value;
 
-            foreach (var spriteNode in node.Elements("Sprite"))
-            {
-                var sprite = Sprite.FromXml(spriteNode, basePath);
-                info.Sprites.Add(sprite.Name, sprite);
-            }
-
-            foreach (var keyNode in node.Elements("State"))
-            {
-                info.States.Add(MenuStateInfo.FromXml(keyNode, basePath));
-            }
-
-            XElement soundNode = node.Element("Sound");
-            if (soundNode != null)
-            {
-                info.ChangeSound = SoundInfo.FromXml(soundNode, basePath);
-            }
+            info.Load(node, basePath);
 
             return info;
         }
 
-        public void Save(XmlTextWriter writer)
+        protected override void Load(XElement node, string basePath)
+        {
+            base.Load(node, basePath);
+
+            foreach (var keyNode in node.Elements("State"))
+            {
+                this.States.Add(MenuStateInfo.FromXml(keyNode, basePath));
+            }
+        }
+
+        public override void Save(XmlTextWriter writer)
         {
             writer.WriteStartElement("Menu");
 
-            writer.WriteAttributeString("name", Name);
-
-            foreach (var sprite in Sprites.Values)
-            {
-                sprite.WriteTo(writer);
-            }
-
-            if (ChangeSound != null)
-            {
-                ChangeSound.Save(writer);
-            }
+            base.Save(writer);
 
             foreach (var state in States)
             {
